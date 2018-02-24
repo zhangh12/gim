@@ -1,0 +1,36 @@
+\name{gim-package}
+\alias{gim-package}
+\alias{gim}
+\docType{package}
+\title{
+\packageTitle{gim}
+}
+\description{
+\packageDescription{gim}
+}
+\details{
+
+The DESCRIPTION file:
+\packageDESCRIPTION{gim}
+\packageIndices{gim}
+~~ An overview of how to use the package, including the most important ~~
+~~ functions ~~
+}
+\author{
+\packageAuthor{gim}
+
+Maintainer: \packageMaintainer{gim}
+}
+\references{
+~~ Literature or other references for background information ~~
+}
+~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
+~~ the R documentation directory ~~
+\keyword{ package }
+\seealso{
+~~ Optional links to other man pages, e.g. ~~
+~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
+}
+\examples{
+~~ simple examples of the most important functions ~~
+}
