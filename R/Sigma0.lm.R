@@ -1,4 +1,5 @@
 
+# return optimal Sigma0, the covariance of auxiliary information
 Sigma0.lm <- function(para, para.id, int, model, nsample, outcome = 'y'){
   
   message('Estimating optimal covariance for auxiliary information...')

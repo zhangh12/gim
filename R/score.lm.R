@@ -39,6 +39,7 @@ score.lm <- function(para, para.id, int, inv.V, bet0, outcome = 'y'){
   for(i in 1:length(id)){
     tmp <- as.vector(g.the[[i]] %*% lam)
     sc[id[i]] <- dlogL[i] - sum(tmp * pr)
+    rm(tmp)
   }
   
   g.alp <- gfunction.alp.lm(para, para.id, int)
@@ -47,6 +48,7 @@ score.lm <- function(para, para.id, int, inv.V, bet0, outcome = 'y'){
     tmp <- as.vector(g.alp[[i]] %*% lam)
     k <- k + 1
     sc[k] <- -sum(tmp * pr)
+    rm(tmp)
   }
   
   bet <- para[min(id.bet):max(id.bet)]
