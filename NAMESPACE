@@ -1,1 +1,4 @@
-exportPattern("^[[:alpha:]]+")
+#exportPattern("^[[:alpha:]]+")
+importFrom(stats, coef, cov, glm)
+importFrom(numDeriv, jacobian)
+export(gim)
