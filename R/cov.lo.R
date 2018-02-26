@@ -1,13 +1,13 @@
 
 
-cov.lm <- function(para, para.id, int, model, nsample, outcome = 'y'){
+cov.lo <- function(para, para.id, int, model, nsample, outcome = 'y'){
   
   int$'(Intercept)' <- 1
   
-  g <- gfunction.lm(para, para.id, int)
-  g.the <- gfunction.the.lm(para, para.id, int)
-  g.alp <- gfunction.alp.lm(para, para.id, int)
-  g.bet <- gfunction.bet.lm(para, para.id, int)
+  g <- gfunction.lo(para, para.id, int)
+  g.the <- gfunction.the.lo(para, para.id, int)
+  g.alp <- gfunction.alp.lo(para, para.id, int)
+  g.bet <- gfunction.bet.lo(para, para.id, int)
   
   id.lam <- para.id$id.lam
   id.the <- para.id$id.the
@@ -42,15 +42,13 @@ cov.lm <- function(para, para.id, int, model, nsample, outcome = 'y'){
     J.tbet[, i] <- t(g.bet[[i]]) %*% pr
   }
   
-  J.the <- matrix(0, nrow = nthe, ncol = nthe)
-  sigma <- para[id.the$start[1]]
-  the <- para[(id.the$start[1]+1):id.the$end[1]]
+  the <- para[id.the$start[1]:id.the$end[1]]
   fx <- as.matrix(int[, names(the), drop = FALSE])
-  J.the[1, 1] <- 1/2/sigma
-  J.the[-1, -1] <- t(fx) %*% (fx * pr)
-  J.the <- 1/sigma * J.the
+  elin <- as.vector(exp(fx %*% the))
+  yh <- elin/(1+elin)
+  J.the <- t(fx) %*% (fx * (yh * (1-yh) * pr))
   
-  suppressMessages(Sigma0 <- Sigma0.lm(para, para.id, int, model, nsample, outcome))
+  suppressMessages(Sigma0 <- Sigma0.lo(para, para.id, int, model, nsample, outcome))
   J.bet <- solve(Sigma0)/n
   
   np <- length(para)

@@ -1,18 +1,15 @@
 
 
-reorganize <- function(fit, para.id){
+reorganize <- function(fit, para.id, family){
   
-  para <- fit$coefficients
-  vcov <- fit$vcov
+  if(family == 'gaussian'){
+    fit <- reorganize.lm(fit, para.id)
+  }
   
-  id.the <- para.id$id.the
-  sigma2 <- para[min(id.the)]
-  para <- para[(min(id.the)+1):max(id.the)]
-  vcov <- vcov[(min(id.the)+1):max(id.the), (min(id.the)+1):max(id.the)]
-  rownames(vcov) <- names(para)
-  colnames(vcov) <- names(para)
+  if(family == 'binomial'){
+    fit <- reorganize.lo(fit, para.id)
+  }
   
-  fit <- list(coefficients = para, vcov = vcov, sigma2 = sigma2)
   fit
   
 }
