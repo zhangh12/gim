@@ -1,31 +1,31 @@
 
 
-obj.lm <- function(para, para.id, int, inv.V, bet0, outcome = 'y'){
+obj.lm <- function(para, para.id, data, inv.V, bet0, outcome = 'y'){
   
-  int$'(Intercept)' <- 1
+  data$'(Intercept)' <- 1
   
   id.lam <- para.id$id.lam
   id.the <- para.id$id.the
   id.alp <- para.id$id.alp
   id.bet <- para.id$id.bet
   
-  nmodel <- nrow(id.alp)
-  nt <- max(id.lam)
+  nmodel <- nrow(id.bet)
+  nlam <- max(id.lam)
   
   lam <- para[id.lam$start[1]:id.lam$end[1]]
   
   sigma <- para[id.the$start[1]]
   the <- para[(id.the$start[1]+1):id.the$end[1]]
-  fx <- as.matrix(int[, names(the), drop = FALSE])
-  y <- int[, outcome]
+  fx <- as.matrix(data[, names(the), drop = FALSE])
+  y <- data[, outcome]
   res <- y - as.vector(fx %*% the)
   
-  g <- gfunction.lm(para, para.id, int)
+  g <- gfunction.lm(para, para.id, data)
   
   pr <- as.vector(1/(1+g %*% lam))
   
   np <- length(para)
-  n <- nrow(int)
+  n <- nrow(data)
   
   bet <- para[min(id.bet):max(id.bet)]
   

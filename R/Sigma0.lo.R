@@ -1,6 +1,6 @@
 
 # return optimal Sigma0, the covariance of auxiliary information
-Sigma0.lo <- function(para, para.id, int, model, nsample, outcome = 'y'){
+Sigma0.lo <- function(para, para.id, data, model, nsample, outcome = 'y'){
   
   message('Estimating optimal covariance for auxiliary information...')
   
@@ -11,8 +11,8 @@ Sigma0.lo <- function(para, para.id, int, model, nsample, outcome = 'y'){
   id.alp <- para.id$id.alp
   id.bet <- para.id$id.bet
   
-  nmodel <- nrow(id.alp)
-  nt <- max(id.lam)
+  nmodel <- nrow(id.bet)
+  nlam <- max(id.lam)
   n <- nrow(int)
   
   lam <- para[id.lam$start[1]:id.lam$end[1]]
@@ -21,27 +21,39 @@ Sigma0.lo <- function(para, para.id, int, model, nsample, outcome = 'y'){
   fx <- as.matrix(int[, names(the), drop = FALSE])
   y <- int[, outcome]
   
-  hess <- matrix(0, nrow = nt, ncol = nt)
-  score <- matrix(0, nrow = n, ncol = nt)
+  hess <- matrix(0, nrow = nlam, ncol = nlam)
+  score <- matrix(0, nrow = n, ncol = nlam)
   offset <- max(id.the)
   for(i in 1:nmodel){
-    alp <- para[id.alp$start[i]:id.alp$end[i]]
-    bet <- para[id.bet$start[i]:id.bet$end[i]]
+    
+    id.a <- alp.index.lo(id.alp, i)
+    alp.exist <- !is.null(id.a)
+    if(alp.exist){
+      alp <- para[id.a]
+    }else{
+      alp <- NULL
+    }
+    
+    id.b <- id.bet$start[i]:id.bet$end[i]
+    bet <- para[id.b]
     gam <- c(alp, bet)
     
     rx <- as.matrix(int[, names(gam), drop = FALSE])
-    ra <- as.matrix(rx[, names(alp), drop = FALSE])
+    if(alp.exist){
+      ra <- as.matrix(rx[, names(alp), drop = FALSE])
+    }else{
+      ra <- NULL
+    }
     rb <- as.matrix(rx[, names(bet), drop = FALSE])
     
     tmp <- as.vector(exp(rx %*% gam))
     yi <- tmp/(1+tmp)
     
-    id.a <- id.alp$start[i]:id.alp$end[i]
-    hess[id.a - offset, id.a - offset] <- - (t(ra) %*% (ra * yi * (1-yi)))/n
-    
-    id.b <- id.bet$start[i]:id.bet$end[i]
-    hess[id.a - offset, id.b - offset] <- - (t(ra) %*% (rb * yi * (1-yi)))/n
-    hess[id.b - offset, id.a - offset] <- t(hess[id.a - offset, id.b - offset])
+    if(alp.exist){
+      hess[id.a - offset, id.a - offset] <- - (t(ra) %*% (ra * yi * (1-yi)))/n
+      hess[id.a - offset, id.b - offset] <- - (t(ra) %*% (rb * yi * (1-yi)))/n
+      hess[id.b - offset, id.a - offset] <- t(hess[id.a - offset, id.b - offset])
+    }
     
     hess[id.b - offset, id.b - offset] <- - (t(rb) %*% (rb * yi * (1-yi)))/n
     
@@ -50,16 +62,20 @@ Sigma0.lo <- function(para, para.id, int, model, nsample, outcome = 'y'){
     
     ##############
     
-    score[, id.a - offset] <- ra * (y - yi)
+    if(alp.exist){
+      score[, id.a - offset] <- ra * (y - yi)
+    }
     score[, id.b - offset] <- rb * (y - yi)
+    
+    rm(id.a, id.b, alp.exist)
     
   }
   
   info <- cov(score)
   for(i in 1:nmodel){
     for(j in i:nmodel){
-      id1 <- c(id.alp$start[i]:id.alp$end[i], id.bet$start[i]:id.bet$end[i])
-      id2 <- c(id.alp$start[j]:id.alp$end[j], id.bet$start[j]:id.bet$end[j])
+      id1 <- c(alp.index.lo(id.alp, i), id.bet$start[i]:id.bet$end[i])
+      id2 <- c(alp.index.lo(id.alp, j), id.bet$start[j]:id.bet$end[j])
       info[id1 - offset, id2 - offset] <- nsample[i, j] * info[id1 - offset, id2 - offset]
       info[id2 - offset, id1 - offset] <- t(info[id1 - offset, id2 - offset])
     }

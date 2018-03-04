@@ -1,14 +1,14 @@
 
 
-init.lm <- function(formula, int, model, nsample){
+init.lm <- function(formula, data, model, nsample){
   
   message('Initializing integration analysis...')
   
-  fit0 <- glm(formula, data = int, family = 'gaussian')
+  fit0 <- glm(formula, data = data, family = 'gaussian')
   the <- c(mean(fit0$residuals^2), coef(fit0))
   names(the)[1] <- 'sigma'
   
-  n <- nrow(int)
+  n <- nrow(data)
   nmodel <- length(model)
   
   alp <- NULL
@@ -20,14 +20,14 @@ init.lm <- function(formula, int, model, nsample){
   for(i in 1:nmodel){
     
     form <- model[[i]][[1]]
-    fit <- glm(form, data = int, family = 'gaussian')
-    alp.var <- c('(Intercept)', model[[i]][[2]])
+    fit <- glm(form, data = data, family = 'gaussian')
+    alp.var <- as.character(model[[i]][[2]])
     bet.var <- as.character(model[[i]][[3]]$var)
     N <- diag(nsample)[i]
     alp0 <- c(mean(fit$residuals^2), coef(fit)[alp.var])
-    names(alp0)[1] <- paste0('tau', i)
+    names(alp0)[1] <- paste0('tau', i) # always be the variance parameter in the first entry
     meta.bet <- (n * coef(fit)[bet.var] + N * model[[i]][[3]]$bet) / (n + N)
-    meta.bet <- model[[i]][[3]]$bet
+    #meta.bet <- model[[i]][[3]]$bet
     names(meta.bet) <- model[[i]][[3]]$var
     alp <- c(alp, alp0)
     bet <- c(bet, meta.bet)
@@ -43,18 +43,21 @@ init.lm <- function(formula, int, model, nsample){
   id.alp <- id.alp[-1, ]
   id.bet <- id.bet[-1, ]
   
-  nt <- length(alp) + length(bet)
-  lam <- rep(0.01, nt)
-  names(lam) <- paste0('lam', 1:nt)
+  nlam <- length(alp) + length(bet)
+  lam <- rep(0.01, nlam)
+  names(lam) <- paste0('lam', 1:nlam)
   
   para <- c(lam, the, alp, bet)
   
-  id.lam <- data.frame(start = 1, end = nt)
-  id.the <- data.frame(start = nt + 1, end = nt + length(the))
-  id.alp$start <- id.alp$start + nt + length(the)
-  id.alp$end <- id.alp$end + nt + length(the)
-  id.bet$start <- id.bet$start + nt + length(the) + length(alp)
-  id.bet$end <- id.bet$end + nt + length(the) + length(alp)
+  nthe <- length(the)
+  nalp <- length(alp)
+  
+  id.lam <- data.frame(start = 1, end = nlam)
+  id.the <- data.frame(start = nlam + 1, end = nlam + nthe)
+  id.alp$start <- id.alp$start + nlam + nthe
+  id.alp$end <- id.alp$end + nlam + nthe
+  id.bet$start <- id.bet$start + nlam + nthe + nalp
+  id.bet$end <- id.bet$end + nlam + nthe + nalp
   
   para.id <- list(id.lam = id.lam, id.the = id.the, id.alp = id.alp, id.bet = id.bet)
   

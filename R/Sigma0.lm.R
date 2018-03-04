@@ -1,6 +1,6 @@
 
 # return optimal Sigma0, the covariance of auxiliary information
-Sigma0.lm <- function(para, para.id, int, model, nsample, outcome = 'y'){
+Sigma0.lm <- function(para, para.id, data, model, nsample, outcome = 'y'){
   
   message('Estimating optimal covariance for auxiliary information...')
   
@@ -11,8 +11,8 @@ Sigma0.lm <- function(para, para.id, int, model, nsample, outcome = 'y'){
   id.alp <- para.id$id.alp
   id.bet <- para.id$id.bet
   
-  nmodel <- nrow(id.alp)
-  nt <- max(id.lam)
+  nmodel <- nrow(id.bet)
+  nlam <- max(id.lam)
   n <- nrow(int)
   
   lam <- para[id.lam$start[1]:id.lam$end[1]]
@@ -22,44 +22,63 @@ Sigma0.lm <- function(para, para.id, int, model, nsample, outcome = 'y'){
   fx <- as.matrix(int[, names(the), drop = FALSE])
   y <- int[, outcome]
   
-  hess <- matrix(0, nrow = nt, ncol = nt)
-  score <- matrix(0, nrow = n, ncol = nt)
+  hess <- matrix(0, nrow = nlam, ncol = nlam)
+  score <- matrix(0, nrow = n, ncol = nlam)
   offset <- max(id.the)
   for(i in 1:nmodel){
-    tau <- para[id.alp$start[i]]
-    alp <- para[(id.alp$start[i] + 1):id.alp$end[i]]
-    bet <- para[id.bet$start[i]:id.bet$end[i]]
+    id.tau <- id.alp$start[i]
+    tau <- para[id.tau]
+    
+    id.a <- alp.index.lm(id.alp, i)
+    alp.exist <- !is.null(id.a)
+    if(alp.exist){
+      alp <- para[id.a]
+    }else{
+      alp <- NULL
+    }
+    
+    id.b <- id.bet$start[i]:id.bet$end[i]
+    bet <- para[id.b]
     gam <- c(alp, bet)
     
     rx <- as.matrix(int[, names(gam), drop = FALSE])
-    ra <- as.matrix(rx[, names(alp), drop = FALSE])
+    if(alp.exist){
+      ra <- as.matrix(rx[, names(alp), drop = FALSE])
+    }else{
+      ra <- NULL
+    }
     rb <- as.matrix(rx[, names(bet), drop = FALSE])
     res <- as.vector(y - rx %*% gam)
     
-    hess[id.alp$start[i] - offset, id.alp$start[i] - offset] <- 1/2/tau^2 - 1/tau^3 * mean(res^2)
-    id.a <- (id.alp$start[i]+1):id.alp$end[i]
-    hess[id.alp$start[i] - offset, id.a - offset] <- -1/tau^2 * t(t(ra) %*% res)/n
-    hess[id.a - offset, id.alp$start[i] - offset] <- t(hess[id.alp$start[i] - offset, id.a - offset])
+    hess[id.tau - offset, id.tau - offset] <- 1/2/tau^2 - 1/tau^3 * mean(res^2)
+    if(alp.exist){
+      hess[id.tau - offset, id.a - offset] <- -1/tau^2 * t(t(ra) %*% res)/n
+      hess[id.a - offset, id.tau - offset] <- t(hess[id.tau - offset, id.a - offset])
+      hess[id.a - offset, id.a - offset] <- -1/tau * (t(ra) %*% ra)/n
+    }
     
-    hess[id.a - offset, id.a - offset] <- -1/tau * (t(ra) %*% ra)/n
+    hess[id.tau - offset, id.b - offset] <- -1/tau^2 * t(t(rb) %*% res)/n
+    hess[id.b - offset, id.tau - offset] <- t(hess[id.tau - offset, id.b - offset])
     
-    id.b <- id.bet$start[i]:id.bet$end[i]
-    hess[id.alp$start[i] - offset, id.b - offset] <- -1/tau^2 * t(t(rb) %*% res)/n
-    hess[id.b - offset, id.alp$start[i] - offset] <- t(hess[id.alp$start[i] - offset, id.b - offset])
-    
-    hess[id.a - offset, id.b - offset] <- -1/tau^2 * (t(ra) %*% rb)/n
-    hess[id.b - offset, id.a - offset] <- t(hess[id.a - offset, id.b - offset])
+    if(alp.exist){
+      hess[id.a - offset, id.b - offset] <- -1/tau^2 * (t(ra) %*% rb)/n
+      hess[id.b - offset, id.a - offset] <- t(hess[id.a - offset, id.b - offset])
+    }
     
     hess[id.b - offset, id.b - offset] <- -1/tau * (t(rb) %*% rb)/n
     
-    id <- c(id.alp$start[i], id.a, id.b)
+    id <- c(id.tau, id.a, id.b)
     hess[id - offset, id - offset] <- nsample[i, i] * hess[id - offset, id - offset]
     
     ##############
     
-    score[, id.alp$start[i] - offset] <- -1/2/tau + 1/2/tau^2 * res^2
-    score[, id.a - offset] <- 1/tau * (ra * res)
+    score[, id.tau - offset] <- -1/2/tau + 1/2/tau^2 * res^2
+    if(alp.exist){
+      score[, id.a - offset] <- 1/tau * (ra * res)
+    }
     score[, id.b - offset] <- 1/tau * (rb * res)
+    
+    rm(id.tau, id.a, id.b, alp.exist)
     
   }
   

@@ -1,13 +1,13 @@
 
 
-init.lo <- function(formula, int, model, nsample){
+init.lo <- function(formula, data, model, nsample){
   
   message('Initializing integration analysis...')
   
-  fit0 <- glm(formula, data = int, family = 'binomial')
+  fit0 <- glm(formula, data = data, family = 'binomial')
   the <- coef(fit0)
   
-  n <- nrow(int)
+  n <- nrow(data)
   nmodel <- length(model)
   
   alp <- NULL
@@ -16,23 +16,30 @@ init.lo <- function(formula, int, model, nsample){
   id.alp <- data.frame(start = 0, end = 0)
   id.bet <- data.frame(start = 0, end = 0)
   
+  no.alp <- NULL
   for(i in 1:nmodel){
     
     form <- model[[i]][[1]]
-    fit <- glm(form, data = int, family = 'binomial')
-    alp.var <- c('(Intercept)', model[[i]][[2]])
+    fit <- glm(form, data = data, family = 'binomial')
+    alp.var <- as.character(model[[i]][[2]])
     bet.var <- as.character(model[[i]][[3]]$var) # critical for meta-analysis of bet below
     N <- diag(nsample)[i]
     alp0 <- coef(fit)[alp.var]
     meta.bet <- (n * coef(fit)[bet.var] + N * model[[i]][[3]]$bet) / (n + N)
-    meta.bet <- model[[i]][[3]]$bet
+    #meta.bet <- model[[i]][[3]]$bet
     names(meta.bet) <- model[[i]][[3]]$var
     alp <- c(alp, alp0)
     bet <- c(bet, meta.bet)
     bet0 <- c(bet0, model[[i]][[3]]$bet)
     
-    tmp <- data.frame(start = id.alp$end[i] + 1, end = id.alp$end[i] + length(alp0))
+    if(length(alp0) > 0){
+      tmp <- data.frame(start = id.alp$end[i] + 1, end = id.alp$end[i] + length(alp0))
+    }else{
+      tmp <- id.alp[nrow(id.alp), ]
+      no.alp <- c(no.alp, i)
+    }
     id.alp <- rbind(id.alp, tmp)
+    
     tmp <- data.frame(start = id.bet$end[i] + 1, end = id.bet$end[i] + length(meta.bet))
     id.bet <- rbind(id.bet, tmp)
     rm(form, fit, alp.var, bet.var, N, alp0, meta.bet, tmp)
@@ -41,18 +48,24 @@ init.lo <- function(formula, int, model, nsample){
   id.alp <- id.alp[-1, ]
   id.bet <- id.bet[-1, ]
   
-  nt <- length(alp) + length(bet)
-  lam <- rep(0.01, nt)
-  names(lam) <- paste0('lam', 1:nt)
+  nlam <- length(alp) + length(bet)
+  lam <- rep(0.01, nlam)
+  names(lam) <- paste0('lam', 1:nlam)
   
   para <- c(lam, the, alp, bet)
   
-  id.lam <- data.frame(start = 1, end = nt)
-  id.the <- data.frame(start = nt + 1, end = nt + length(the))
-  id.alp$start <- id.alp$start + nt + length(the)
-  id.alp$end <- id.alp$end + nt + length(the)
-  id.bet$start <- id.bet$start + nt + length(the) + length(alp)
-  id.bet$end <- id.bet$end + nt + length(the) + length(alp)
+  nthe <- length(the)
+  nalp <- length(alp)
+  
+  id.lam <- data.frame(start = 1, end = nlam)
+  id.the <- data.frame(start = nlam + 1, end = nlam + nthe)
+  id.alp$start <- id.alp$start + nlam + nthe
+  id.alp$end <- id.alp$end + nlam + nthe
+  if(!is.null(no.alp)){
+    id.alp[no.alp, ] <- NA
+  }
+  id.bet$start <- id.bet$start + nlam + nthe + nalp
+  id.bet$end <- id.bet$end + nlam + nthe + nalp
   
   para.id <- list(id.lam = id.lam, id.the = id.the, id.alp = id.alp, id.bet = id.bet)
   
