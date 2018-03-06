@@ -1,6 +1,6 @@
 
 
-cov.lm <- function(para, para.id, data, model, nsample, outcome = 'y'){
+cov.lm <- function(para, para.id, data, model, nsample, V, bet0, outcome = 'y'){
   
   data$'(Intercept)' <- 1
   
@@ -52,6 +52,7 @@ cov.lm <- function(para, para.id, data, model, nsample, outcome = 'y'){
   
   suppressMessages(Sigma0 <- Sigma0.lm(para, para.id, data, model, nsample, outcome))
   J.bet <- solve(Sigma0)/n
+  #J.bet <- solve(V)/n
   
   np <- length(para)
   Jv <- matrix(0, nrow = np, ncol = np)
@@ -70,10 +71,26 @@ cov.lm <- function(para, para.id, data, model, nsample, outcome = 'y'){
   Iv[1:nlam, 1:nlam] <- -J.tt
   Iv[min(id.the):max(id.the), min(id.the):max(id.the)] <- J.the
   Iv[min(id.bet):max(id.bet), min(id.bet):max(id.bet)] <- J.bet
+  #Iv[min(id.bet):max(id.bet), min(id.bet):max(id.bet)] <- n * J.bet %*% Sigma0 %*% J.bet
   
   vcov <- solve(Jv) %*% Iv %*% solve(Jv)/n
   
   vcov
+  
+  #################
+  # seems like this sample version is better
+  # so abandent everything before this line
+  #################
+  
+  Jv0 <- -hess.lm(para, para.id, data, solve(V), bet0)/n
+  
+  Iv0 <- matrix(0, nrow = np, ncol = np)
+  Iv0[1:nlam, 1:nlam] <- -Jv0[1:nlam, 1:nlam]
+  Iv0[min(id.the):max(id.the), min(id.the):max(id.the)] <- Jv0[min(id.the):max(id.the), min(id.the):max(id.the)]
+  Iv0[min(id.bet):max(id.bet), min(id.bet):max(id.bet)] <- Jv0[min(id.bet):max(id.bet), min(id.bet):max(id.bet)]
+  vcov0 <- solve(Jv0) %*% Iv0 %*% solve(Jv0)/n
+  
+  vcov0
   
 }
 

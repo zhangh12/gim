@@ -2,7 +2,7 @@
 # return optimal Sigma0, the covariance of auxiliary information
 Sigma0.lo <- function(para, para.id, data, model, nsample, outcome = 'y'){
   
-  message('Estimating optimal covariance for auxiliary information...')
+  #message('Estimating optimal covariance for auxiliary information...')
   
   int$'(Intercept)' <- 1
   
@@ -82,8 +82,10 @@ Sigma0.lo <- function(para, para.id, data, model, nsample, outcome = 'y'){
   }
   
   V <- solve(hess) %*% info %*% solve(hess)
-  id <- min(id.bet):max(id.bet) - offset
-  V <- V[id, id, drop = FALSE]
+  id <- min(id.bet):max(id.bet)
+  V <- V[id - offset, id - offset, drop = FALSE]
+  colnames(V) <- names(para)[id]
+  rownames(V) <- names(para)[id]
   
   V
   

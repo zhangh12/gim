@@ -6,8 +6,6 @@ NR <- function(para, para.id, family, data, V, bet0, outcome = 'y'){
   np <- length(para)
   para.null <- rep(NA, np)
   
-  message('Running Newton-Raphson algorithm...')
-  
   i <- 0
   while(i<100){
     if(family == 'gaussian'){
@@ -47,7 +45,7 @@ NR <- function(para, para.id, family, data, V, bet0, outcome = 'y'){
   
   #svd(inv.h0)$d
   
-  print(s0)
+  #print(s0)
   
   list(coefficients = para, score = s0, conv = ifelse(all(abs(s0) < 1e-6), 1, 0))
   

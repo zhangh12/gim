@@ -2,6 +2,7 @@
 
 reorganize.lo <- function(fit, para.id){
   
+  score <- fit$score
   para <- fit$coefficients
   vcov <- fit$vcov
   
@@ -11,7 +12,7 @@ reorganize.lo <- function(fit, para.id){
   rownames(vcov) <- names(para)
   colnames(vcov) <- names(para)
   
-  fit <- list(coefficients = para, vcov = vcov)
+  fit <- list(coefficients = para, vcov = vcov, score = score)
   fit
   
 }
