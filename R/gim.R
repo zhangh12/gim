@@ -1,6 +1,6 @@
 
 
-gim <- function(formula, family, data, model, nsample, outcome = 'y'){
+gim <- function(formula, family, data, model, nsample){
   
   UseMethod('gim')
   

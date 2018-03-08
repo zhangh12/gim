@@ -1,6 +1,6 @@
 
 # Newton-Raphson algorithm
-NR <- function(para, para.id, family, data, V, bet0, outcome = 'y'){
+NR <- function(para, para.id, family, data, V, bet0, outcome){
   
   inv.V <- solve(V)
   np <- length(para)

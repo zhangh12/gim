@@ -1,6 +1,6 @@
 
 
-obj.lo <- function(para, para.id, data, inv.V, bet0, outcome = 'y'){
+obj.lo <- function(para, para.id, data, inv.V, bet0, outcome){
   
   data$'(Intercept)' <- 1
   

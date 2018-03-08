@@ -1,10 +1,10 @@
 
 # return optimal Sigma0, the covariance of auxiliary information
-Sigma0.lo <- function(para, para.id, data, model, nsample, outcome = 'y'){
+Sigma0.lo <- function(para, para.id, data, model, nsample, outcome){
   
   #message('Estimating optimal covariance for auxiliary information...')
   
-  int$'(Intercept)' <- 1
+  data$'(Intercept)' <- 1
   
   id.lam <- para.id$id.lam
   id.the <- para.id$id.the
@@ -13,13 +13,13 @@ Sigma0.lo <- function(para, para.id, data, model, nsample, outcome = 'y'){
   
   nmodel <- nrow(id.bet)
   nlam <- max(id.lam)
-  n <- nrow(int)
+  n <- nrow(data)
   
   lam <- para[id.lam$start[1]:id.lam$end[1]]
   
   the <- para[id.the$start[1]:id.the$end[1]]
-  fx <- as.matrix(int[, names(the), drop = FALSE])
-  y <- int[, outcome]
+  fx <- as.matrix(data[, names(the), drop = FALSE])
+  y <- data[, outcome]
   
   hess <- matrix(0, nrow = nlam, ncol = nlam)
   score <- matrix(0, nrow = n, ncol = nlam)
@@ -38,7 +38,7 @@ Sigma0.lo <- function(para, para.id, data, model, nsample, outcome = 'y'){
     bet <- para[id.b]
     gam <- c(alp, bet)
     
-    rx <- as.matrix(int[, names(gam), drop = FALSE])
+    rx <- as.matrix(data[, names(gam), drop = FALSE])
     if(alp.exist){
       ra <- as.matrix(rx[, names(alp), drop = FALSE])
     }else{

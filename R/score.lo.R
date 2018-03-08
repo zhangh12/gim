@@ -1,6 +1,6 @@
 
 
-score.lo <- function(para, para.id, data, inv.V, bet0, outcome = 'y'){
+score.lo <- function(para, para.id, data, inv.V, bet0, outcome){
   
   #return(grad(obj.lo, para, para.id = para.id, data = data, inv.V = inv.V, bet0 = bet0, outcome = outcome))
   

@@ -1,8 +1,14 @@
 
 
-gim.default <- function(formula, family, data, model, nsample, outcome = 'y'){
+gim.default <- function(formula, family, data, model, nsample){
   
   nsample <- as.matrix(nsample)
+  formula <- as.formula(formula)
+  
+  fp <- formula.parse(formula, model, data)
+  model <- fp$model
+  data <- fp$data
+  outcome <- fp$outcome
   
   ini <- init(formula, family, data, model, nsample)
   para <- ini$para

@@ -1,6 +1,6 @@
 
 
-cov.lo <- function(para, para.id, data, model, nsample, V, bet0, outcome = 'y'){
+cov.lo <- function(para, para.id, data, model, nsample, V, bet0, outcome){
   
   data$'(Intercept)' <- 1
   
@@ -84,7 +84,7 @@ cov.lo <- function(para, para.id, data, model, nsample, V, bet0, outcome = 'y'){
   # so abandent everything before this line
   #################
   
-  Jv0 <- -hess.lo(para, para.id, data, solve(V), bet0)/n
+  Jv0 <- -hess.lo(para, para.id, data, solve(V), bet0, outcome)/n
   
   Iv0 <- matrix(0, nrow = np, ncol = np)
   Iv0[1:nlam, 1:nlam] <- -Jv0[1:nlam, 1:nlam]
