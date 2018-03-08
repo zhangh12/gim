@@ -1,0 +1,104 @@
+\name{gim}
+\alias{gim}
+%- Also NEED an '\alias' for EACH other topic documented here.
+\title{
+Fitting Generalized Integration Models
+}
+\description{
+\code{gim} is used to fit generalized integration models, which assume linear or logistic regression model on a given (internal) data, while integrating auxiliary or summary information of relevant variables that are estimated from external data, on which different working models could be assumed. Compared to conventional regression model, e.g., \code{\link[stats]{glm}}, based on internal data, the estimate of \code{gim} method gains additional power by making maximum use of all kinds of available data. 
+}
+\usage{
+gim(formula, family, data, model, nsample)
+}
+%- maybe also 'usage' for other objects documented here.
+\arguments{
+  \item{formula}{
+an object of class "\code{\link[stats]{formula}}" (or one that can be coerced to that class): a symbolic description of the model to be fitted on the given dataset. More details of model specification are illustrated in 'Details' and 'Examples'.
+}
+  \item{family}{
+'gaussian' for linear regression or 'binomial' for logistic regression. 
+}
+  \item{data}{
+a data frame containing the variables specified in \code{formula} and \code{model}. 
+}
+  \item{model}{
+a list describing auxiliary information and working models that are used to generate such information. See 'Details' and 'Examples' for more details.
+}
+  \item{nsample}{
+a matrix specifying the number of samples shared in datasets that are used to fit the working models given in \code{model}. See 'Details' and 'Examples' for more details.
+}
+}
+\details{
+\code{form} is the model to be used to fit a conventional regression model if no additional information is availabl. It could be very general as long as it is acceptable to the \code{glm} or \code{lm} functions. It can eliminate the intercept, \code{y ~ .-1}, or involve arithmetic expressions, e.g., \code{log(x)}, or other operators like \code{*} for interactions \code{as.factor(x1)*I(x2 > 0)}.
+
+Summary information are calculated on data of external studies. We do not have access to the raw data, instead, estimates from working model fitted on external data are given. \code{model} is a list, each component contains information of a working model. Specifically, a component is also a list of two values \code{form} and \code{info}, where \code{form} is the fitted working model, and \code{info} is a data frame with two columns \code{var} and \code{bet}, the names of variables and their estiamtes from the working model. Usually the estimate of intercept of a model is unavailable. If user is able to provide such estimate, the name in column \code{var} must be \code{"(Intercept)"}. See below for an example. 
+
+Note that multiple working models could be fitted on the same external data, in that case, the summary information of each working model should be given in \code{model} separately. For example, on an external dataset, if two models \code{y ~ x1} and \code{y ~ x2} are fitted, then the estimates of \code{x1} and \code{x2} should be given as two components in \code{model}.
+
+\code{gim} requires an internal dataset in which individual-level samples are available. Since general formula is supported in \code{gim}, it is important to provide variables in \code{data} so that \code{R} can find columns of all variables parsed from formulas in \code{formula} and \code{model}. Read vignettes (upcoming) for more examples about how to create a proper \code{data} for \code{gim}. We will release a function to help users with this. 
+
+Some of summary information can be calculated from datasets that share samples. Ignoring this will lead to underestimated standard error. \code{nsample} is a squared matrix of dimension \code{p}, which is equal to the length of \code{model}. Thus, the (i,i) entry in \code{nsample} is the number of samples used in fitting the working model specified in \code{model[[i]]$form}, while the (i,k) entry is the number of samples that are involved in fitting working models \code{model[[i]]$form} and \code{model[[k]]$form}. For example, if two working models, e.g., \code{y ~ x1} and \code{y ~ x2} are fitted on the same dataset of 100 samples, then \code{nsample} is a matrix of all entries being 100. Read example below and vignettes (upcoming) for more examples. 
+
+}
+\value{
+\code{gim} returns an object of class "\code{gim}". The function \code{\link[base]{summary}} can be used to print a summary of the results. We will support the use of \code{\link[stats]{anova}} in later versions. 
+
+The generic accessor functions \code{\link[stats]{coefficients}}, \code{\link[stats]{confint}}, and \code{\link[stats]{vcov}} can be used to extract coefficients, confidence intervals, and variance-covariance of estimates from the object returned by \code{gim}. 
+
+An object of class "\code{gim}" is a list containing the following components:
+  \item{coefficients }{a named vector of coefficients}
+  \item{vcov }{the variance-covariance matrix of estimates, including the intercept}
+  \item{sigma2 }{estimated variance of error term in a linear model. Only available for the \code{gaussian} family}
+  \item{call }{the matched call}
+%% ...
+}
+\references{
+Zhang, H., Deng, L., Schiffman, M., Qin, J., Yu, K. (2018) Generalized integration model for improved statistical inference by leveraging external summary data. 
+}
+\author{
+Han Zhang
+}
+\examples{
+# All data used in this example are lazyloaded
+# An artificial dataset is attached to illustrate the concept of GIM method
+# It contains:
+# A data frame "dat"" contains samples from an internal study. 
+# A formula specified in "form" is used to describe the full model.
+# A list "model" specifying summary information from (four) external studies. 
+# A matrix "nsample" specifying sample size of (four) external studies. 
+head(dat)
+form
+
+# model is a list, each component contains summary data fitted from 
+# a working model.
+#
+# In this example, summary data are calculated from four working models, 
+# thus model is a list of length 4. 
+#
+# Estimates of all variables in model[[1]]$form are given in model[[1]]$info, 
+# except for the intercept, while only partial information in model[[2]]$form 
+# are provided (subtypeC is estimated but missed). 
+#
+# If you want to provide estimate of intercept, you can add it to $info by 
+# giving its name '(Intercept)'. See vignettes (upcoming ...). 
+model
+
+# nsample is a 4x4 matrix, with its (i,k) entry means the number of samples 
+# that are used in fitting models i and k. 
+#
+# The second study used 118 samples, which is a subset of data in the first 
+# study (n = 200). 
+#
+# The same 50 samples are used to fit the third and forth models. None of 
+# these 50 samples are used in the first two studies. 
+nsample
+
+# can take 2 minutes
+# fit <- gim(form, 'gaussian', dat, model, nsample)
+
+# fit is saved with this package
+summary(fit)
+coef(fit)
+confint(fit)
+
+}

@@ -1,11 +1,12 @@
 Package: gim
 Type: Package
-Title: Generalized integration model
-Version: 0.7.0
-Date: 2018-03-07
+Title: Generalized Integration Model
+Version: 0.8.0
+Date: 2018-03-08
 Author: Han Zhang, Kai Yu
 Maintainer: Han Zhang <han.zhang2@nih.gov>
 Depends: R (>= 3.4.0)
 Imports: numDeriv
-Description: This is an R package for generalized integration model. 
+Description: This package implements the generalized integration model, which integrates individual-level data and summary information under a generalized linear model framework. 
 License: MIT + file LICENSE
+LazyData: true
