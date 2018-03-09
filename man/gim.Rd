@@ -29,15 +29,20 @@ a matrix specifying the number of samples shared in datasets that are used to fi
 }
 }
 \details{
-\code{form} is the model to be used to fit a conventional regression model if no additional information is availabl. It could be very general as long as it is acceptable to the \code{glm} or \code{lm} functions. It can eliminate the intercept, \code{y ~ .-1}, or involve arithmetic expressions, e.g., \code{log(x)}, or other operators like \code{*} for interactions \code{as.factor(x1)*I(x2 > 0)}.
 
-Summary information are calculated on data of external studies. We do not have access to the raw data, instead, estimates from working model fitted on external data are given. \code{model} is a list, each component contains information of a working model. Specifically, a component is also a list of two values \code{form} and \code{info}, where \code{form} is the fitted working model, and \code{info} is a data frame with two columns \code{var} and \code{bet}, the names of variables and their estiamtes from the working model. Usually the estimate of intercept of a model is unavailable. If user is able to provide such estimate, the name in column \code{var} must be \code{"(Intercept)"}. See below for an example. 
+\bold{\code{formula} }
+\code{formula} is the model to be used to fit a conventional regression model if no additional information is available. It could be very general as long as it is acceptable to the \code{glm} or \code{lm} functions. It can eliminate the intercept, \code{y ~ .-1}, or involve arithmetic expressions, e.g., \code{log(x)}, or other operators like \code{*} for interactions \code{as.factor(x1)*I(x2 > 0)}.
 
-Note that multiple working models could be fitted on the same external data, in that case, the summary information of each working model should be given in \code{model} separately. For example, on an external dataset, if two models \code{y ~ x1} and \code{y ~ x2} are fitted, then the estimates of \code{x1} and \code{x2} should be given as two components in \code{model}.
+\bold{\code{model} }
+Summary information are calculated on data of external studies, but we do not have access to their raw data. Instead, estimates from working model fitted on external data are given (e.g., reported in literature). The argument \code{model} is a list, each component contains information of a working model. Specifically, a component is also a list of two entries \code{form} and \code{info}, where \code{form} is a formula representing the fitted working model, and \code{info} is a data frame with two columns \code{var} and \code{bet}, the names of variables and their estiamtes from the working model, respectively. Usually the estimate of intercept of a working model is unavailable as people fit but do not reporte it. If user is able to provide such an estimate, the name in column \code{var} must be \code{"(Intercept)"}. See below for an example. 
 
-\code{gim} requires an internal dataset in which individual-level samples are available. Since general formula is supported in \code{gim}, it is important to provide variables in \code{data} so that \code{R} can find columns of all variables parsed from formulas in \code{formula} and \code{model}. Read vignettes (upcoming) for more examples about how to create a proper \code{data} for \code{gim}. We will release a function to help users with this. 
+Note that multiple working models could be fitted on the same external data, in that case, the summary information of each working model should be given in \code{model} separately. For example, on an external dataset, if two models \code{y ~ x1} and \code{y ~ x2} are fitted, then the estimates of \code{x1} and \code{x2} should be given as two components in \code{model}. This happens as many research groups can study the same datasets from different angles. 
 
-Some of summary information can be calculated from datasets that share samples. Ignoring this will lead to underestimated standard error. \code{nsample} is a squared matrix of dimension \code{p}, which is equal to the length of \code{model}. Thus, the (i,i) entry in \code{nsample} is the number of samples used in fitting the working model specified in \code{model[[i]]$form}, while the (i,k) entry is the number of samples that are involved in fitting working models \code{model[[i]]$form} and \code{model[[k]]$form}. For example, if two working models, e.g., \code{y ~ x1} and \code{y ~ x2} are fitted on the same dataset of 100 samples, then \code{nsample} is a matrix of all entries being 100. Read example below and vignettes (upcoming) for more examples. 
+\bold{\code{data} }
+\code{gim} requires an internal dataset \code{data} in which individual-level samples are available. Statistically, this data is critical to provide information of correlation between covariates. This data is also known as the reference data in the literatures. Since general formula is supported in \code{gim}, it is important to provide variables in \code{data} so that \code{R} can find columns of all variables parsed from formulas in \code{formula} and \code{model}. Read vignettes (upcoming) for more examples about how to create a proper \code{data} for \code{gim}. We will also release a function to help users with this. 
+
+\bold{\code{nsample} }
+Some of summary information can be calculated from datasets that share samples. Ignoring this will lead to underestimated standard error. For example, if a dataset is studied by two different models, the estimates from these two models are not independent but highly correlated. Therefore, this correlation must be properly handled when calculating the standard error of \code{gim} estimate, from which a hypothesis testing is conducted. \code{nsample} is a squared matrix of dimension \code{p}, which is equal to the length of \code{model}. Thus, the (i,i) entry in \code{nsample} is the number of samples used in fitting the working model specified in \code{model[[i]]$form}, while the (i,k) entry is the number of samples that are involved in fitting working models \code{model[[i]]$form} and \code{model[[k]]$form}. For example, if two working models, e.g., \code{y ~ x1} and \code{y ~ x2} are fitted on the same dataset of 100 samples, then \code{nsample} is a matrix of all entries being 100. Read example below and vignettes (upcoming) for more examples. 
 
 }
 \value{
@@ -100,5 +105,9 @@ nsample
 summary(fit)
 coef(fit)
 confint(fit)
+
+# one can compare the gim estimates with those estimated from internal data
+fit1 <- glm(form, 'gaussian', dat)
+summary(fit1)
 
 }
