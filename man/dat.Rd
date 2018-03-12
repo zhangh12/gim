@@ -9,9 +9,9 @@ Data for example in \code{\link[gim]{gim}}
 }
 \usage{data("dat")}
 \format{
-  A data frame with 350 observations on the following 10 variables.
+  A data frame with 200 observations on the following 10 variables.
   \describe{
-    \item{\code{subj.id}}{a character vector, subject ID}
+    \item{\code{subj.id}}{a character vector, subject IDs}
     \item{\code{density}}{a numeric vector, outcome}
     \item{\code{bmi}}{a numeric vector, body mass index}
     \item{\code{age}}{a numeric vector, age}
@@ -19,8 +19,8 @@ Data for example in \code{\link[gim]{gim}}
     \item{\code{parity}}{a numeric vector, number of children}
     \item{\code{p53}}{a numeric vector, biomarker}
     \item{\code{subtype}}{a character vector, biomarker}
-    \item{\code{age_50to59}}{an integer vector, age category derived from \code{age}}
-    \item{\code{age_gt60}}{an integer vector, age category derived from \code{age}}
+    \item{\code{age_50to59}}{an binary vector, age category derived from \code{age}}
+    \item{\code{age_gt60}}{an binary vector, age category derived from \code{age}}
   }
 }
 \details{

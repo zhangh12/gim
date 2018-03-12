@@ -58,7 +58,7 @@ An object of class "\code{gim}" is a list containing the following components:
 %% ...
 }
 \references{
-Zhang, H., Deng, L., Schiffman, M., Qin, J., Yu, K. (2018) Generalized integration model for improved statistical inference by leveraging external summary data. 
+Zhang, H., Deng, L., Schiffman, M., Qin, J., Yu, K. (2018) Generalized integration model for improved statistical inference by leveraging external summary data. Under review. 
 }
 \author{
 Han Zhang
@@ -77,31 +77,24 @@ form
 # model is a list, each component contains summary data fitted from 
 # a working model.
 #
-# In this example, summary data are calculated from four working models, 
-# thus model is a list of length 4. 
+# In this example, summary data are calculated from two working models, 
+# thus model is a list of length 2. 
 #
-# Estimates of all variables in model[[1]]$form are given in model[[1]]$info, 
-# except for the intercept, while only partial information in model[[2]]$form 
-# are provided (subtypeC is estimated but missed). 
+# Estimates of a subset of variables in model[[1]]$form are given in 
+# model[[1]]$info, except for the intercept and subtypeC (estimated but missed). 
 #
 # If you want to provide estimate of intercept, you can add it to $info by 
 # giving its name '(Intercept)'. See vignettes (upcoming ...). 
 model
 
-# nsample is a 4x4 matrix, with its (i,k) entry means the number of samples 
+# nsample is a 2x2 matrix, with its (i,k) entry means the number of samples 
 # that are used in fitting models i and k. 
 #
-# The second study used 118 samples, which is a subset of data in the first 
-# study (n = 200). 
-#
-# The same 50 samples are used to fit the third and forth models. None of 
-# these 50 samples are used in the first two studies. 
+# two working models are fitted on two datasets (n=200, 300), 
+# shared 100 subjects 
 nsample
 
-# can take 2 minutes
-# fit <- gim(form, 'gaussian', dat, model, nsample)
-
-# fit is saved with this package
+fit <- gim(form, 'gaussian', dat, model[2], nsample[2, 2])
 summary(fit)
 coef(fit)
 confint(fit)
