@@ -9,6 +9,7 @@ gim.default <- function(formula, family, data, model, nsample){
   model <- fp$model
   data <- fp$data
   outcome <- fp$outcome
+  formula <- fp$formula
   
   ini <- init(formula, family, data, model, nsample)
   para <- ini$para
@@ -29,6 +30,8 @@ gim.default <- function(formula, family, data, model, nsample){
   
   fit$call <- match.call()
   class(fit) <- 'gim'
+  
+  fit$V.bet <- V
   
   fit
   

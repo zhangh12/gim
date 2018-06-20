@@ -55,6 +55,7 @@ An object of class "\code{gim}" is a list containing the following components:
   \item{vcov }{the variance-covariance matrix of estimates, including the intercept}
   \item{sigma2 }{estimated variance of error term in a linear model. Only available for the \code{gaussian} family}
   \item{call }{the matched call}
+  \item{V.bet }{the variance-covariance matrix of external estimate \code{bet} in \code{model}}
 %% ...
 }
 \references{
@@ -94,7 +95,7 @@ model
 # shared 100 subjects 
 nsample
 
-fit <- gim(form, 'gaussian', dat, model[2], nsample[2, 2])
+fit <- gim(form, 'gaussian', dat, model[1], nsample[1, 1])
 summary(fit)
 coef(fit)
 confint(fit)
