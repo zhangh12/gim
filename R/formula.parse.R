@@ -8,7 +8,7 @@ formula.parse <- function(formula, model, data){
   outcome <- colnames(mf0)[1]
   mat0 <- model.matrix(form0, data = data)
   # need the following otherwise a formula like y~. will result in an error
-  form0 <- paste0(outcome, ' ~ ', paste0(setdiff(colnames(mat0), '(Intercept)'), collapse = ' + '))
+  #form0 <- paste0(outcome, ' ~ ', paste0(setdiff(colnames(mat0), '(Intercept)'), collapse = ' + '))
   
   miss.var <- NULL
   nform <- length(model)

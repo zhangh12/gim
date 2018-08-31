@@ -1,6 +1,6 @@
 
 
-gim.default <- function(formula, family, data, model, nsample){
+gim.default <- function(formula, family, data, model, nsample, niter = 2){
   
   nsample <- as.matrix(nsample)
   formula <- as.formula(formula)
@@ -16,13 +16,17 @@ gim.default <- function(formula, family, data, model, nsample){
   para.id <- ini$para.id
   bet0 <- ini$bet0
   
-  message('Running Newton-Raphson algorithm on first stage...')
-  V <- optimal.Sigma0(para, para.id, family, data, model, nsample, outcome)
-  para <- NR(para, para.id, family, data, V, bet0, outcome)$coefficients
+  if(niter < 2){
+    stop('niter should at least be 2')
+  }
   
-  message('Running Newton-Raphson algorithm on second stage...')
-  V <- optimal.Sigma0(para, para.id, family, data, model, nsample, outcome)
-  fit <- NR(para, para.id, family, data, V, bet0, outcome)
+  while(niter > 0){
+    #message('Running Newton-Raphson algorithm on first stage...')
+    V <- optimal.Sigma0(para, para.id, family, data, model, nsample, outcome)
+    fit <- NR(para, para.id, family, data, V, bet0, outcome)
+    para <- fit$coefficients
+    niter <- niter - 1
+  }
   
   fit$vcov <- mcov(fit$coefficients, para.id, family, data, model, nsample, V, bet0, outcome)
   
