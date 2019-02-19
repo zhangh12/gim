@@ -1,6 +1,6 @@
 
 # Newton-Raphson algorithm
-NR <- function(para, para.id, family, data, V, bet0, outcome){
+NR <- function(para, para.id, family, data, ref, V, bet0, outcome){
   
   inv.V <- solve(V)
   np <- length(para)
@@ -9,13 +9,13 @@ NR <- function(para, para.id, family, data, V, bet0, outcome){
   i <- 0
   while(i<100){
     if(family == 'gaussian'){
-      s0 <- score.lm(para, para.id, data, inv.V, bet0, outcome)
-      #s1 <- grad(obj.lm, para, para.id = para.id, data = data, inv.V = inv.V, bet0 = bet0, outcome = outcome)
+      s0 <- score.lm(para, para.id, data, ref, inv.V, bet0, outcome)
+      #s1 <- grad(obj.lm, para, para.id = para.id, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, outcome = outcome)
     }
     
     if(family == 'binomial'){
-      s0 <- score.lo(para, para.id, data, inv.V, bet0, outcome)
-      #s1 <- grad(obj.lo, para, para.id = para.id, data = data, inv.V = inv.V, bet0 = bet0, outcome = outcome)
+      s0 <- score.lo(para, para.id, data, ref, inv.V, bet0, outcome)
+      #s1 <- grad(obj.lo, para, para.id = para.id, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, outcome = outcome)
     }
     
     if(all(abs(s0) < 1e-6)){
@@ -23,11 +23,11 @@ NR <- function(para, para.id, family, data, V, bet0, outcome){
     }
     
     if(family == 'gaussian'){
-      t0 <- try(inv.h0 <- solve(hess.lm(para, para.id, data, inv.V, bet0, outcome)), silent = TRUE)
+      t0 <- try(inv.h0 <- solve(hess.lm(para, para.id, data, ref, inv.V, bet0, outcome)), silent = TRUE)
     }
     
     if(family == 'binomial'){
-      t0 <- try(inv.h0 <- solve(hess.lo(para, para.id, data, inv.V, bet0, outcome)), silent = TRUE)
+      t0 <- try(inv.h0 <- solve(hess.lo(para, para.id, data, ref, inv.V, bet0, outcome)), silent = TRUE)
     }
     
     if('try-error' %in% class(t0)){

@@ -2,7 +2,7 @@
 importFrom(stats, coef, cov, glm, printCoefmat, pchisq)
 importFrom(stats, as.formula, model.frame, model.matrix)
 importFrom(numDeriv, jacobian)
-export(gim)
+export(gim, gim.default)
 S3method(summary, gim)
 S3method(vcov, gim)
 S3method(print, summary.gim)

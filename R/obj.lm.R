@@ -1,6 +1,6 @@
 
 
-obj.lm <- function(para, para.id, data, inv.V, bet0, outcome){
+obj.lm <- function(para, para.id, data, ref, inv.V, bet0, outcome){
   
   data$'(Intercept)' <- 1
   
@@ -20,7 +20,7 @@ obj.lm <- function(para, para.id, data, inv.V, bet0, outcome){
   y <- data[, outcome]
   res <- y - as.vector(fx %*% the)
   
-  g <- gfunction.lm(para, para.id, data)
+  g <- gfunction.lm(para, para.id, ref)
   
   pr <- as.vector(1/(1+g %*% lam))
   

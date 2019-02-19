@@ -1,13 +1,14 @@
 
 
-gim.default <- function(formula, family, data, model, nsample, niter = 2){
+gim.default <- function(formula, family, data, model, nsample, ref = NULL, niter = 2){
   
   nsample <- as.matrix(nsample)
   formula <- as.formula(formula)
   
-  fp <- formula.parse(formula, model, data)
+  fp <- formula.parse(formula, model, data, ref)
   model <- fp$model
   data <- fp$data
+  ref <- fp$ref
   outcome <- fp$outcome
   formula <- fp$formula
   
@@ -22,20 +23,19 @@ gim.default <- function(formula, family, data, model, nsample, niter = 2){
   
   while(niter > 0){
     #message('Running Newton-Raphson algorithm on first stage...')
-    V <- optimal.Sigma0(para, para.id, family, data, model, nsample, outcome)
-    fit <- NR(para, para.id, family, data, V, bet0, outcome)
+    V <- optimal.Sigma0(para, para.id, family, ref, model, nsample, outcome)
+    fit <- NR(para, para.id, family, data, ref, V, bet0, outcome)
     para <- fit$coefficients
     niter <- niter - 1
   }
   
-  fit$vcov <- mcov(fit$coefficients, para.id, family, data, model, nsample, V, bet0, outcome)
+  fit$vcov <- mcov(fit$coefficients, para.id, family, data, ref, model, nsample, V, bet0, outcome)
   
   fit <- reorganize(fit, para.id, family)
   
   fit$call <- match.call()
-  class(fit) <- 'gim'
-  
   fit$V.bet <- V
+  class(fit) <- 'gim'
   
   fit
   

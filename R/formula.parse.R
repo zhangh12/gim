@@ -1,6 +1,13 @@
 
 
-formula.parse <- function(formula, model, data){
+formula.parse <- function(formula, model, data, ref = NULL){
+  
+  if(is.null(ref)){
+    ref <- data
+  }
+  int.id <- 1:nrow(data)
+  ref <- ref[, colnames(data)]
+  data <- rbind(data, ref)
   
   form0 <- as.formula(formula)
   #outcome <- all.vars(form0)[1] # this does not work for log(y) ~ x. It will return 'y' rather than 'log(y)'
@@ -44,6 +51,9 @@ formula.parse <- function(formula, model, data){
   
   mat0 <- as.data.frame(mat0)
   
-  list(model = model, data = mat0, outcome = outcome, formula = form0)
+  data <- mat0[int.id, , drop = FALSE]
+  ref <- mat0[-int.id, , drop = FALSE]
+  
+  list(model = model, data = data, ref = ref, outcome = outcome, formula = form0)
   
 }

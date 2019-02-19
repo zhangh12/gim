@@ -1,6 +1,6 @@
 
 
-obj.lo <- function(para, para.id, data, inv.V, bet0, outcome){
+obj.lo <- function(para, para.id, data, ref, inv.V, bet0, outcome){
   
   data$'(Intercept)' <- 1
   
@@ -19,7 +19,7 @@ obj.lo <- function(para, para.id, data, inv.V, bet0, outcome){
   y <- data[, outcome]
   lin <- as.vector(fx %*% the)
   
-  g <- gfunction.lo(para, para.id, data)
+  g <- gfunction.lo(para, para.id, ref)
   
   pr <- as.vector(1/(1+g %*% lam))
   

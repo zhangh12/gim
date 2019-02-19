@@ -1,8 +1,8 @@
 
 
-score.lo <- function(para, para.id, data, inv.V, bet0, outcome){
+score.lo <- function(para, para.id, data, ref, inv.V, bet0, outcome){
   
-  #return(grad(obj.lo, para, para.id = para.id, data = data, inv.V = inv.V, bet0 = bet0, outcome = outcome))
+  #return(grad(obj.lo, para, para.id = para.id, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, outcome = outcome))
   
   data$'(Intercept)' <- 1
   
@@ -24,7 +24,7 @@ score.lo <- function(para, para.id, data, inv.V, bet0, outcome){
   elin <- exp(lin)
   res <- y-elin/(1+elin)
   
-  g <- gfunction.lo(para, para.id, data)
+  g <- gfunction.lo(para, para.id, ref)
   
   pr <- as.vector(1/(1+g %*% lam))
   
@@ -35,7 +35,7 @@ score.lo <- function(para, para.id, data, inv.V, bet0, outcome){
   sc[id.lam$start[1]:id.lam$end[1]] <- -as.vector(t(g) %*% pr)
   
   dlogL <- as.vector(t(fx) %*% res)
-  g.the <- gfunction.the.lo(para, para.id, data)
+  g.the <- gfunction.the.lo(para, para.id, ref)
   id <- id.the$start[1]:id.the$end[1]
   for(i in 1:length(id)){
     tmp <- as.vector(g.the[[i]] %*% lam)
@@ -43,7 +43,7 @@ score.lo <- function(para, para.id, data, inv.V, bet0, outcome){
     rm(tmp)
   }
   
-  g.alp <- gfunction.alp.lo(para, para.id, data)
+  g.alp <- gfunction.alp.lo(para, para.id, ref)
   k <- max(id.the)
   for(ga in g.alp){
     tmp <- as.vector(ga %*% lam)
@@ -54,7 +54,7 @@ score.lo <- function(para, para.id, data, inv.V, bet0, outcome){
   
   bet <- para[min(id.bet):max(id.bet)]
   dqf <- as.vector(inv.V %*% (bet - bet0))
-  g.bet <- gfunction.bet.lo(para, para.id, data)
+  g.bet <- gfunction.bet.lo(para, para.id, ref)
   k <- min(id.bet) - 1
   for(i in 1:length(g.bet)){
     tmp <- as.vector(g.bet[[i]] %*% lam)

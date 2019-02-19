@@ -1,13 +1,13 @@
 
 
-cov.lo <- function(para, para.id, data, model, nsample, V, bet0, outcome){
+cov.lo <- function(para, para.id, data, ref, model, nsample, V, bet0, outcome){
   
   data$'(Intercept)' <- 1
   
-  g <- gfunction.lo(para, para.id, data)
-  g.the <- gfunction.the.lo(para, para.id, data)
-  g.alp <- gfunction.alp.lo(para, para.id, data)
-  g.bet <- gfunction.bet.lo(para, para.id, data)
+  g <- gfunction.lo(para, para.id, ref)
+  g.the <- gfunction.the.lo(para, para.id, ref)
+  g.alp <- gfunction.alp.lo(para, para.id, ref)
+  g.bet <- gfunction.bet.lo(para, para.id, ref)
   
   id.lam <- para.id$id.lam
   id.the <- para.id$id.the
@@ -17,40 +17,43 @@ cov.lo <- function(para, para.id, data, model, nsample, V, bet0, outcome){
   nmodel <- nrow(id.bet)
   nlam <- max(id.lam)
   n <- nrow(data)
+  m <- nrow(ref)
+  r <- m/n
   
   lam <- para[id.lam$start[1]:id.lam$end[1]]
   pr <- as.vector(1/(1+g %*% lam))
   pr <- pr/sum(pr)
+  pr0 <- 1/n
   
-  J.tt <- -(t(g) %*% (g * pr))
+  J.tt <- -(t(g) %*% (g * pr)) * r
   
   nthe <- length(g.the)
   J.tthe <- matrix(0, nrow = nlam, ncol = nthe)
   for(i in 1:nthe){
-    J.tthe[, i] <- t(g.the[[i]]) %*% pr
+    J.tthe[, i] <- t(g.the[[i]]) %*% pr * r
   }
   
   nalp <- length(g.alp)
   if(nalp > 0){
     J.talp <- matrix(0, nrow = nlam, ncol = nalp)
     for(i in 1:nalp){
-      J.talp[, i] <- t(g.alp[[i]]) %*% pr
+      J.talp[, i] <- t(g.alp[[i]]) %*% pr * r
     }
   }
   
   nbet <- length(g.bet)
   J.tbet <- matrix(0, nrow = nlam, ncol = nbet)
   for(i in 1:nbet){
-    J.tbet[, i] <- t(g.bet[[i]]) %*% pr
+    J.tbet[, i] <- t(g.bet[[i]]) %*% pr * r
   }
   
   the <- para[id.the$start[1]:id.the$end[1]]
   fx <- as.matrix(data[, names(the), drop = FALSE])
   elin <- as.vector(exp(fx %*% the))
   yh <- elin/(1+elin)
-  J.the <- t(fx) %*% (fx * (yh * (1-yh) * pr))
+  J.the <- t(fx) %*% (fx * (yh * (1-yh) * pr0))
   
-  suppressMessages(Sigma0 <- Sigma0.lo(para, para.id, data, model, nsample, outcome))
+  suppressMessages(Sigma0 <- Sigma0.lo(para, para.id, ref, model, nsample, outcome))
   J.bet <- solve(Sigma0)/n
   #J.bet <- solve(V)/n
   
@@ -84,7 +87,7 @@ cov.lo <- function(para, para.id, data, model, nsample, V, bet0, outcome){
   # so abandent everything before this line
   #################
   
-  Jv0 <- -hess.lo(para, para.id, data, solve(V), bet0, outcome)/n
+  Jv0 <- -hess.lo(para, para.id, data, ref, solve(V), bet0, outcome)/n
   
   Iv0 <- matrix(0, nrow = np, ncol = np)
   Iv0[1:nlam, 1:nlam] <- -Jv0[1:nlam, 1:nlam]
