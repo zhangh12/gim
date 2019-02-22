@@ -1,18 +1,13 @@
 
-alp.index.lo <- function(id.alp, i){
+# return index of alp, log OR of all variables, including intercept (if any)
+alp.index.lo <- function(map, i){
   
-  st <- id.alp$start[i]
-  ed <- id.alp$end[i]
-  
-  if(any(is.na(c(st, ed)))){ # a logistic regression model, all coef given, no alp for this model
+  # a logistic regression model, all coef given (inc intercept), no alp for this model
+  if(any(is.na(map$alp[[i]]))){
     return(NULL)
   }
   
-  if(st > ed){
-    stop('debug alp.index.lo')
-  }
-  
-  st:ed
+  map$alp[[i]]
   
 }
 

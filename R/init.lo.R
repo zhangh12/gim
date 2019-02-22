@@ -1,8 +1,15 @@
 
+# lam: Lagrange multiplier
+# the: parameters in full model (internal data)
+# alp: nuisance parameter in working model (external data)
+# bet: parameters in working model (with summary data)
+# para := c(lam, the, alp, bet)
+# bet0 := summary statistics to be used in quadratic form
+
 
 init.lo <- function(formula, data, model, nsample){
   
-  message('Initializing integration analysis...')
+  #message('Initializing integration analysis...')
   
   fit0 <- glm(formula, data = data, family = 'binomial')
   the <- coef(fit0)
@@ -13,8 +20,10 @@ init.lo <- function(formula, data, model, nsample){
   alp <- NULL
   bet <- NULL
   bet0 <- NULL
-  id.alp <- data.frame(start = 0, end = 0)
-  id.bet <- data.frame(start = 0, end = 0)
+  
+  map <- list()
+  map$alp <- list(0:0)
+  map$bet <- list(0:0)
   
   no.alp <- NULL
   for(i in 1:nmodel){
@@ -33,20 +42,19 @@ init.lo <- function(formula, data, model, nsample){
     bet0 <- c(bet0, model[[i]][[3]]$bet)
     
     if(length(alp0) > 0){
-      tmp <- data.frame(start = id.alp$end[i] + 1, end = id.alp$end[i] + length(alp0))
+      map$alp[[i + 1]] <- max(map$alp[[i]]) + 1:length(alp0)
     }else{
-      tmp <- id.alp[nrow(id.alp), ]
+      map$alp[[i + 1]] <- map$alp[[i]]
       no.alp <- c(no.alp, i)
     }
-    id.alp <- rbind(id.alp, tmp)
     
-    tmp <- data.frame(start = id.bet$end[i] + 1, end = id.bet$end[i] + length(meta.bet))
-    id.bet <- rbind(id.bet, tmp)
-    rm(form, fit, alp.var, bet.var, N, alp0, meta.bet, tmp)
+    map$bet[[i + 1]] <- max(map$bet[[i]]) + 1:length(meta.bet)
+    
+    rm(form, fit, alp.var, bet.var, N, alp0, meta.bet)
   }
   
-  id.alp <- id.alp[-1, ]
-  id.bet <- id.bet[-1, ]
+  map$alp[[1]] <- NULL
+  map$bet[[1]] <- NULL
   
   nlam <- length(alp) + length(bet)
   lam <- rep(0.01, nlam)
@@ -57,19 +65,26 @@ init.lo <- function(formula, data, model, nsample){
   nthe <- length(the)
   nalp <- length(alp)
   
-  id.lam <- data.frame(start = 1, end = nlam)
-  id.the <- data.frame(start = nlam + 1, end = nlam + nthe)
-  id.alp$start <- id.alp$start + nlam + nthe
-  id.alp$end <- id.alp$end + nlam + nthe
-  if(!is.null(no.alp)){
-    id.alp[no.alp, ] <- NA
+  map$lam <- 1:nlam
+  map$the <- (nlam + 1) : (nlam + nthe)
+  all.alp <- NULL
+  all.bet <- NULL
+  for(i in 1:nmodel){
+    map$alp[[i]] <- map$alp[[i]] + nlam + nthe
+    map$bet[[i]] <- map$bet[[i]] + nlam + nthe + nalp
+    all.alp <- c(all.alp, map$alp[[i]])
+    all.bet <- c(all.bet, map$bet[[i]])
   }
-  id.bet$start <- id.bet$start + nlam + nthe + nalp
-  id.bet$end <- id.bet$end + nlam + nthe + nalp
+  if(!is.null(no.alp)){
+    for(i in no.alp){
+      map$alp[[i]] <- NA
+    }
+  }
   
-  para.id <- list(id.lam = id.lam, id.the = id.the, id.alp = id.alp, id.bet = id.bet)
+  map$all.alp <- sort(unique(all.alp))
+  map$all.bet <- sort(unique(all.bet))
   
-  list(para = para, para.id = para.id, bet0 = bet0)
+  list(para = para, map = map, bet0 = bet0)
   
 }
 

@@ -1,8 +1,19 @@
 
+# lam: Lagrange multiplier
+# the: parameters in full model (internal data)
+# alp: nuisance parameter in working model (external data)
+# bet: parameters in working model (with summary data)
+# para := c(lam, the, alp, bet)
+# bet0 := summary statistics to be used in quadratic form
+
+## formula: full model (internal data)
+## data: internal data
+## model: working model and summary data
+## nsample: overlapped sample size
 
 init.lm <- function(formula, data, model, nsample){
   
-  message('Initializing integration analysis...')
+  #message('Initializing integration analysis...')
   
   fit0 <- glm(formula, data = data, family = 'gaussian')
   the <- c(mean(fit0$residuals^2), coef(fit0))
@@ -14,16 +25,20 @@ init.lm <- function(formula, data, model, nsample){
   alp <- NULL
   bet <- NULL
   bet0 <- NULL
-  id.alp <- data.frame(start = 0, end = 0)
-  id.bet <- data.frame(start = 0, end = 0)
+  
+  map <- list()
+  map$alp <- list(0:0)
+  map$bet <- list(0:0)
   
   for(i in 1:nmodel){
     
     form <- model[[i]][[1]]
     fit <- glm(form, data = data, family = 'gaussian')
-    alp.var <- as.character(model[[i]][[2]])
+    alp.var <- as.character(model[[i]][[2]]) # nuisance variables in working model
     bet.var <- as.character(model[[i]][[3]]$var)
-    N <- diag(nsample)[i]
+    N <- diag(nsample)[i] # sample size for working model
+    # we assume estimate of error parameter always not provided
+    # so alp0 has at least one entry
     alp0 <- c(mean(fit$residuals^2), coef(fit)[alp.var])
     names(alp0)[1] <- paste0('tau', i) # always be the variance parameter in the first entry
     meta.bet <- (n * coef(fit)[bet.var] + N * model[[i]][[3]]$bet) / (n + N)
@@ -33,15 +48,14 @@ init.lm <- function(formula, data, model, nsample){
     bet <- c(bet, meta.bet)
     bet0 <- c(bet0, model[[i]][[3]]$bet)
     
-    tmp <- data.frame(start = id.alp$end[i] + 1, end = id.alp$end[i] + length(alp0))
-    id.alp <- rbind(id.alp, tmp)
-    tmp <- data.frame(start = id.bet$end[i] + 1, end = id.bet$end[i] + length(meta.bet))
-    id.bet <- rbind(id.bet, tmp)
-    rm(form, fit, alp.var, bet.var, N, alp0, meta.bet, tmp)
+    map$alp[[i + 1]] <- max(map$alp[[i]]) + 1:length(alp0)
+    map$bet[[i + 1]] <- max(map$bet[[i]]) + 1:length(meta.bet)
+    
+    rm(form, fit, alp.var, bet.var, N, alp0, meta.bet)
   }
   
-  id.alp <- id.alp[-1, ]
-  id.bet <- id.bet[-1, ]
+  map$alp[[1]] <- NULL
+  map$bet[[1]] <- NULL
   
   nlam <- length(alp) + length(bet)
   lam <- rep(0.01, nlam)
@@ -52,16 +66,21 @@ init.lm <- function(formula, data, model, nsample){
   nthe <- length(the)
   nalp <- length(alp)
   
-  id.lam <- data.frame(start = 1, end = nlam)
-  id.the <- data.frame(start = nlam + 1, end = nlam + nthe)
-  id.alp$start <- id.alp$start + nlam + nthe
-  id.alp$end <- id.alp$end + nlam + nthe
-  id.bet$start <- id.bet$start + nlam + nthe + nalp
-  id.bet$end <- id.bet$end + nlam + nthe + nalp
+  map$lam <- 1:nlam
+  map$the <- (nlam + 1) : (nlam + nthe)
+  all.alp <- NULL
+  all.bet <- NULL
+  for(i in 1:nmodel){
+    map$alp[[i]] <- map$alp[[i]] + nlam + nthe
+    map$bet[[i]] <- map$bet[[i]] + nlam + nthe + nalp
+    all.alp <- c(all.alp, map$alp[[i]])
+    all.bet <- c(all.bet, map$bet[[i]])
+  }
   
-  para.id <- list(id.lam = id.lam, id.the = id.the, id.alp = id.alp, id.bet = id.bet)
+  map$all.alp <- all.alp
+  map$all.bet <- all.bet
   
-  list(para = para, para.id = para.id, bet0 = bet0)
+  list(para = para, map = map, bet0 = bet0)
   
 }
 

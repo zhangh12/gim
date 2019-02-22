@@ -1,18 +1,16 @@
 
-alp.index.lm <- function(id.alp, i){
+# return index of alp, model coefficients in the linear model
+# error term is ignored
+alp.index.lm <- function(map, i){
   
-  st <- id.alp$start[i]
-  ed <- id.alp$end[i]
-  
-  if(st > ed){
-    stop('debug alp.index.lm')
-  }
-  
-  if(st == ed){ # all coefficients are known for this model, no alp except a tau
+  # no alp except a tau (error term)
+  # we always assume that tau is not given
+  # so length(map$alp[[i]]) > 0
+  if(length(map$alp[[i]]) == 1){
     return(NULL)
   }
   
-  (st + 1):ed
+  map$alp[[i]][-1]
   
 }
 

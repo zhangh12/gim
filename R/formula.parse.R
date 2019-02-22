@@ -1,12 +1,36 @@
 
+## formula: full model for internal data
+## model: working models for external data
+## data: internal data
+## ref: reference panel
 
+
+#####################################################################################
+## list of formula supported in this version
+## (1) y ~ x - 1 # real example in paper (bet1, bet2 given). Feature: -1
+## (2) log(y) ~ x # example in help doc. Feature: log in outcome
+## (3) y ~ I(x==0) -1 # real example in paper (bet1 given)
+#####################################################################################
 formula.parse <- function(formula, model, data, ref = NULL){
   
+  # if ref is not specified, it assumes that internal data could be used as reference
+  # which is used to construct constrain equations
   if(is.null(ref)){
     ref <- data
   }
+  
+  # I am going to parsing formula and extract/create necessary variables (transformed according to formula)
+  # so need to bind data and ref together
+  # after those variables are ready, data and ref will be split again
+  # int.id lets me know which rows are internal data, and which rows are ref
   int.id <- 1:nrow(data)
   
+  # ref may miss some columns in data (e.g. outcome)
+  # I will add those missed columns to ref
+  # and rbind ref and data for parsing
+  # values in added columns are copied from data, which do not make sense
+  # those values could not be NA, otherwise model.frame or model.matrix will delete uncomplete rows
+  # I will remove those added columns before returning, so their values do not matter
   var1 <- colnames(data)
   var2 <- colnames(ref)
   var3 <- intersect(var1, var2)
@@ -16,26 +40,50 @@ formula.parse <- function(formula, model, data, ref = NULL){
     id <- sample(1:nrow(data), nrow(ref), TRUE)
     tmp <- data[id, var4, drop = FALSE]
     rownames(tmp) <- NULL
-    ref[, var4] <- tmp # randomly impute some value so that model.matrix below can work
-                       # I will set it to NA before returning
+    # randomly impute some value so that model.matrix below can work
+    # I use values in data to impute
+    # it is neccessary as it does not introduce new factor level
+    # if imputed to be 0, then 0 might be new level of a factor variable which affect parsing
+    # I will set it to NA before returning
+    ref[, var4] <- tmp
     rm(tmp)
   }
   ref <- ref[, colnames(data)]
   data <- rbind(data, ref)
   
   form0 <- as.formula(formula)
-  #outcome <- all.vars(form0)[1] # this does not work for log(y) ~ x. It will return 'y' rather than 'log(y)'
-  mf0 <- model.frame(form0, data = data)
-  outcome <- colnames(mf0)[1]
+  
+  if(1){
+    # this does not work for log(y) ~ x. It will return 'y' rather than 'log(y)'
+    # use the following instead
+    ori.outcome <- all.vars(form0)[1]
+  }
+  
+  # extract name of transformed outcome 
+  # if log(y) ~ ..., then outcome should be 'log(y)', not 'y'
+  # we aim to creat a data frame with a column named log(y)
+  if(1){
+    mf0 <- model.frame(form0, data = data)
+    outcome <- colnames(mf0)[1]
+  }
+  
+  # create design matrix
+  # expand factor to be dummy variables
+  # expand interaction
+  # expand transformation, e.g. I(), log, etc
+  # add intercept term (all 1, named '(Intercept)')
   mat0 <- model.matrix(form0, data = data)
+  
   # need the following otherwise a formula like y~. will result in an error
   #form0 <- paste0(outcome, ' ~ ', paste0(setdiff(colnames(mat0), '(Intercept)'), collapse = ' + '))
   
   miss.var <- NULL
   nform <- length(model)
+  # parse each of working models
+  # find requested covariates and put it to mat0
   for(i in 1:nform){
     f <- as.formula(model[[i]]$form)
-    mat <- model.matrix(f, data = data)
+    mat <- model.matrix(f, data = data) # desing matrix for working model
     new.var <- setdiff(colnames(mat), colnames(mat0))
     if(length(new.var) > 0){
       mat0 <- cbind(mat0, mat[, new.var, drop = FALSE])
@@ -47,6 +95,7 @@ formula.parse <- function(formula, model, data, ref = NULL){
       covar <- NULL
     }
     
+    # covar is nuisance variables specified in working model but no summary data available
     model[[i]] <- list(f, covar, model[[i]]$info)
   }
   
@@ -55,8 +104,7 @@ formula.parse <- function(formula, model, data, ref = NULL){
     stop(msg)
   }
   
-  mat0 <- cbind(mf0[, outcome], mat0)
-  colnames(mat0)[1] <- outcome
+  mat0 <- cbind(mf0[, outcome, drop = FALSE], mat0)
   
   ori.var <- setdiff(colnames(data), colnames(mat0))
   if(length(ori.var) > 0){

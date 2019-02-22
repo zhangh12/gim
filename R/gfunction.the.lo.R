@@ -1,17 +1,12 @@
 
 
-gfunction.the.lo <- function(para, para.id, data){
+gfunction.the.lo <- function(para, map, data){
   
   data$'(Intercept)' <- 1
   
-  id.lam <- para.id$id.lam
-  id.the <- para.id$id.the
-  id.alp <- para.id$id.alp
-  id.bet <- para.id$id.bet
+  nmodel <- length(map$bet)
   
-  nmodel <- nrow(id.bet)
-  
-  the <- para[id.the$start[1]:id.the$end[1]]
+  the <- para[map$the]
   fx <- as.matrix(data[, names(the), drop = FALSE])
   
   g.the <- list()
@@ -19,15 +14,15 @@ gfunction.the.lo <- function(para, para.id, data){
   nthe <- length(the)
   n <- nrow(data)
   
-  nlam <- max(id.lam)
-  offset <- max(id.the)
+  nlam <- max(map$lam)
+  offset <- max(map$the)
   
   for(j in 1:nthe){
     gt <- matrix(0, nrow = n, ncol = nlam)
     fx0 <- fx[, names(the)[j]]
     for(i in 1:nmodel){
       
-      id.a <- alp.index.lo(id.alp, i)
+      id.a <- alp.index.lo(map, i)
       alp.exist <- !is.null(id.a)
       if(alp.exist){
         alp <- para[id.a]
@@ -35,7 +30,7 @@ gfunction.the.lo <- function(para, para.id, data){
         alp <- NULL
       }
       
-      id.b <- id.bet$start[i]:id.bet$end[i]
+      id.b <- map$bet[[i]]
       bet <- para[id.b]
       gam <- c(alp, bet)
       
@@ -57,4 +52,5 @@ gfunction.the.lo <- function(para, para.id, data){
   g.the
   
 }
+
 

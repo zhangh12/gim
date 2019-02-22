@@ -1,15 +1,14 @@
 
 
-reorganize.lm <- function(fit, para.id){
+reorganize.lm <- function(fit, map){
   
   score <- fit$score
   para <- fit$coefficients
   vcov <- fit$vcov
   
-  id.the <- para.id$id.the
-  sigma2 <- para[min(id.the)]
-  para <- para[(min(id.the)+1):max(id.the)]
-  vcov <- vcov[(min(id.the)+1):max(id.the), (min(id.the)+1):max(id.the)]
+  sigma2 <- para[map$the[1]]
+  para <- para[map$the[-1]]
+  vcov <- vcov[map$the[-1], map$the[-1]]
   rownames(vcov) <- names(para)
   colnames(vcov) <- names(para)
   

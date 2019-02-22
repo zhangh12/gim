@@ -1,30 +1,25 @@
 
 
-score.lo <- function(para, para.id, data, ref, inv.V, bet0, outcome){
+score.lo <- function(para, map, data, ref, inv.V, bet0, outcome){
   
-  #return(grad(obj.lo, para, para.id = para.id, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, outcome = outcome))
+  #return(grad(obj.lo, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, outcome = outcome))
   
   data$'(Intercept)' <- 1
   
-  id.lam <- para.id$id.lam
-  id.the <- para.id$id.the
-  id.alp <- para.id$id.alp
-  id.bet <- para.id$id.bet
-  
-  nmodel <- nrow(id.bet)
-  nlam <- max(id.lam)
+  nmodel <- length(map$bet)
+  nlam <- max(map$lam)
   n <- nrow(data)
   
-  lam <- para[id.lam$start[1]:id.lam$end[1]]
+  lam <- para[map$lam]
   
-  the <- para[id.the$start[1]:id.the$end[1]]
+  the <- para[map$the]
   fx <- as.matrix(data[, names(the), drop = FALSE])
   y <- data[, outcome]
   lin <- as.vector(fx %*% the)
   elin <- exp(lin)
   res <- y-elin/(1+elin)
   
-  g <- gfunction.lo(para, para.id, ref)
+  g <- gfunction.lo(para, map, ref)
   
   pr <- as.vector(1/(1+g %*% lam))
   
@@ -32,19 +27,19 @@ score.lo <- function(para, para.id, data, ref, inv.V, bet0, outcome){
   
   sc <- rep(NA, np)
   names(sc) <- names(para)
-  sc[id.lam$start[1]:id.lam$end[1]] <- -as.vector(t(g) %*% pr)
+  sc[map$lam] <- -as.vector(t(g) %*% pr)
   
   dlogL <- as.vector(t(fx) %*% res)
-  g.the <- gfunction.the.lo(para, para.id, ref)
-  id <- id.the$start[1]:id.the$end[1]
+  g.the <- gfunction.the.lo(para, map, ref)
+  id <- map$the
   for(i in 1:length(id)){
     tmp <- as.vector(g.the[[i]] %*% lam)
     sc[id[i]] <- dlogL[i] - sum(tmp * pr)
     rm(tmp)
   }
   
-  g.alp <- gfunction.alp.lo(para, para.id, ref)
-  k <- max(id.the)
+  g.alp <- gfunction.alp.lo(para, map, ref)
+  k <- max(map$the)
   for(ga in g.alp){
     tmp <- as.vector(ga %*% lam)
     k <- k + 1
@@ -52,10 +47,10 @@ score.lo <- function(para, para.id, data, ref, inv.V, bet0, outcome){
     rm(tmp)
   }
   
-  bet <- para[min(id.bet):max(id.bet)]
+  bet <- para[map$all.bet]
   dqf <- as.vector(inv.V %*% (bet - bet0))
-  g.bet <- gfunction.bet.lo(para, para.id, ref)
-  k <- min(id.bet) - 1
+  g.bet <- gfunction.bet.lo(para, map, ref)
+  k <- min(map$all.bet) - 1
   for(i in 1:length(g.bet)){
     tmp <- as.vector(g.bet[[i]] %*% lam)
     k <- k + 1

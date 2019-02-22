@@ -14,7 +14,7 @@ gim.default <- function(formula, family, data, model, nsample, ref = NULL, niter
   
   ini <- init(formula, family, data, model, nsample)
   para <- ini$para
-  para.id <- ini$para.id
+  map <- ini$map
   bet0 <- ini$bet0
   
   if(niter < 2){
@@ -23,15 +23,15 @@ gim.default <- function(formula, family, data, model, nsample, ref = NULL, niter
   
   while(niter > 0){
     #message('Running Newton-Raphson algorithm on first stage...')
-    V <- optimal.Sigma0(para, para.id, family, ref, model, nsample, outcome)
-    fit <- NR(para, para.id, family, data, ref, V, bet0, outcome)
+    V <- optimal.Sigma0(para, map, family, ref, model, nsample, outcome)
+    fit <- NR(para, map, family, data, ref, V, bet0, outcome)
     para <- fit$coefficients
     niter <- niter - 1
   }
   
-  fit$vcov <- mcov(fit$coefficients, para.id, family, data, ref, model, nsample, V, bet0, outcome)
+  fit$vcov <- mcov(fit$coefficients, map, family, data, ref, model, nsample, V, bet0, outcome)
   
-  fit <- reorganize(fit, para.id, family)
+  fit <- reorganize(fit, map, family)
   
   fit$call <- match.call()
   fit$V.bet <- V

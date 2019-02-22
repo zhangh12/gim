@@ -7,28 +7,22 @@
 # (delta - delta_i) * phi(x)
 # where delta = exp(X * theta)/(1 + exp(X * theta))
 # delta_i = exp(X_1i * alp + X_2i * bet)/(exp(X_1i * alp + X_2i * bet)) for ith auxiliary model
-gfunction.lo <- function(para, para.id, data){
+gfunction.lo <- function(para, map, data){
   
   data$'(Intercept)' <- 1
   
-  id.lam <- para.id$id.lam
-  id.the <- para.id$id.the
-  id.alp <- para.id$id.alp
-  id.bet <- para.id$id.bet
+  nmodel <- length(map$bet)
   
-  nmodel <- nrow(id.bet)
-  
-  the <- para[id.the$start[1]:id.the$end[1]]
+  the <- para[map$the]
   fx <- as.matrix(data[, names(the), drop = FALSE])
   
   n <- nrow(data)
-  nlam <- max(id.lam)
+  nlam <- max(map$lam)
   g <- matrix(0, nrow = n, ncol = nlam)
-  offset <- max(id.the)
-  
+  offset <- max(map$the)
   for(i in 1:nmodel){
     
-    id.a <- alp.index.lo(id.alp, i)
+    id.a <- alp.index.lo(map, i)
     alp.exist <- !is.null(id.a)
     if(alp.exist){
       alp <- para[id.a]
@@ -36,7 +30,7 @@ gfunction.lo <- function(para, para.id, data){
       alp <- NULL
     }
     
-    id.b <- id.bet$start[i]:id.bet$end[i]
+    id.b <- map$bet[[i]]
     bet <- para[id.b]
     gam <- c(alp, bet)
     
@@ -56,3 +50,4 @@ gfunction.lo <- function(para, para.id, data){
   g
   
 }
+

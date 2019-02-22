@@ -5,31 +5,25 @@
 # g = 
 # (x * the - phi(x) * alp[-1])^2 + sigma - tau
 # (x * the - phi(x) * alp[-1]) * phi(x)
-gfunction.lm <- function(para, para.id, data){
+gfunction.lm <- function(para, map, data){
   
   data$'(Intercept)' <- 1
   
-  id.lam <- para.id$id.lam
-  id.the <- para.id$id.the
-  id.alp <- para.id$id.alp
-  id.bet <- para.id$id.bet
+  nmodel <- length(map$bet)
   
-  nmodel <- nrow(id.bet)
-  
-  sigma <- para[id.the$start[1]]
-  the <- para[(id.the$start[1]+1):id.the$end[1]]
+  sigma <- para[map$the[1]]
+  the <- para[map$the[-1]]
   fx <- as.matrix(data[, names(the), drop = FALSE])
   
   n <- nrow(data)
-  nlam <- max(id.lam)
+  nlam <- max(map$lam)
   g <- matrix(0, nrow = n, ncol = nlam)
-  offset <- max(id.the)
-  
+  offset <- max(map$the)
   for(i in 1:nmodel){
-    id.tau <- id.alp$start[i]
+    id.tau <- map$alp[[i]][1]
     tau <- para[id.tau]
     
-    id.a <- alp.index.lm(id.alp, i)
+    id.a <- alp.index.lm(map, i)
     alp.exist <- !is.null(id.a)
     if(alp.exist){
       alp <- para[id.a]
@@ -37,7 +31,7 @@ gfunction.lm <- function(para, para.id, data){
       alp <- NULL
     }
     
-    id.b <- id.bet$start[i]:id.bet$end[i]
+    id.b <- map$bet[[i]]
     bet <- para[id.b]
     gam <- c(alp, bet)
     
@@ -55,3 +49,4 @@ gfunction.lm <- function(para, para.id, data){
   g
   
 }
+
