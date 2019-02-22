@@ -8,7 +8,7 @@ Fitting Generalized Integration Models
 \code{gim} is used to fit generalized integration models, which assume linear or logistic regression model on a given (internal) data, while integrating auxiliary or summary information of relevant variables that are estimated from external data, on which different working models could be assumed. Compared to conventional regression model, e.g., \code{\link[stats]{glm}}, based on internal data, the estimate of \code{gim} method gains additional power by making maximum use of all kinds of available data. 
 }
 \usage{
-gim(formula, family, data, model, nsample)
+gim(formula, family, data, model, nsample, ref = NULL, niter = 2)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -26,6 +26,12 @@ a list describing auxiliary information and working models that are used to gene
 }
   \item{nsample}{
 a matrix specifying the number of samples shared in datasets that are used to fit the working models given in \code{model}. See 'Details' and 'Examples' for more details.
+}
+  \item{ref}{
+a data frame containing the covariates specified in \code{formula} and \code{model}. It is the reference sample for modeling summary statistics in \code{model}. This assumes that \code{ref} is sampled from the external population. 
+}
+  \item{niter}{
+for test purpose, use its default value. 
 }
 }
 \details{
@@ -103,5 +109,28 @@ confint(fit)
 # one can compare the gim estimates with those estimated from internal data
 fit1 <- glm(form, 'gaussian', dat)
 summary(fit1)
+
+# by default, covariates in dat is used as reference in gim
+# which assumes that the external and internal populations are the same
+fit3 <- gim(form, 'gaussian', dat, model[1], nsample[1, 1], ref = dat)
+all(coef(fit) == coef(fit3)) # TRUE
+
+# if additional reference is available, 
+# and it comes from the internal population from which dat is sampled
+# gim can use it
+add.ref <- data.frame(p53 = sample(1:3, 200, TRUE, c(.3, .3, .4)), 
+                      subtype = sample(c('A','B','C'), 200, TRUE, 
+                                       c(0.6, 0.2, 0.2)), 
+                      stringsAsFactors = FALSE)
+ref <- rbind(dat[, c('p53', 'subtype')], add.ref)
+fit2 <- gim(form, 'gaussian', dat, model[1], nsample[1, 1], ref = ref)
+
+# if the external population is different from the internal population
+# then reference for summary data specified in model needs to be provided
+ext.ref <- data.frame(p53 = sample(1:3, 200, TRUE, c(.3, .3, .4)), 
+                      subtype = sample(c('A','B','C'), 200, TRUE, 
+                                       c(0.6, 0.2, 0.2)), 
+                      stringsAsFactors = FALSE)
+fit3 <- gim(form, 'gaussian', dat, model[1], nsample[1, 1], ref = ext.ref)
 
 }

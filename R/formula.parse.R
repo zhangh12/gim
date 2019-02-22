@@ -6,6 +6,20 @@ formula.parse <- function(formula, model, data, ref = NULL){
     ref <- data
   }
   int.id <- 1:nrow(data)
+  
+  var1 <- colnames(data)
+  var2 <- colnames(ref)
+  var3 <- intersect(var1, var2)
+  ref <- ref[, var3, drop = FALSE]
+  var4 <- setdiff(var1, var2)
+  if(length(var4) > 0){
+    id <- sample(1:nrow(data), nrow(ref), TRUE)
+    tmp <- data[id, var4, drop = FALSE]
+    rownames(tmp) <- NULL
+    ref[, var4] <- tmp # randomly impute some value so that model.matrix below can work
+                       # I will set it to NA before returning
+    rm(tmp)
+  }
   ref <- ref[, colnames(data)]
   data <- rbind(data, ref)
   
@@ -53,6 +67,10 @@ formula.parse <- function(formula, model, data, ref = NULL){
   
   data <- mat0[int.id, , drop = FALSE]
   ref <- mat0[-int.id, , drop = FALSE]
+  
+  if(length(var4) > 0){
+    ref[, var4] <- NA
+  }
   
   list(model = model, data = data, ref = ref, outcome = outcome, formula = form0)
   
