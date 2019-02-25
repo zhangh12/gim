@@ -14,7 +14,6 @@ gfunction.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
   
   the <- para[map$the]
   
-  ref <- as.matrix(ref)
   n <- nrow(ref)
   nlam <- max(map$lam)
   g <- matrix(0, nrow = n, ncol = nlam)
@@ -26,11 +25,11 @@ gfunction.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
     id <- c(alp.index.cc(map, i), map$bet[[i]])
     gam <- para[id]
     
-    rx <- ref[, names(gam), drop = FALSE]
+    rx <- as.matrix(ref[, names(gam), drop = FALSE])
     
     rho.i <- ncase[i, i] / nctrl[i, i]
     
-    g[, id - offset] <- rx * (Delta - delta[, i]) / (1 + rho.i * delta[, i])
+    g[, id - offset] <- rx * ((Delta - delta[, i]) / (1 + rho.i * delta[, i]))
     
   }
   

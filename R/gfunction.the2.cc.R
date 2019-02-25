@@ -5,7 +5,6 @@ gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
   nmodel <- length(map$bet)
   
   the <- para[map$the]
-  ref <- as.matrix(ref)
   
   g.the2 <- list()
   
@@ -16,7 +15,7 @@ gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
   for(i in 1:nmodel){
     id <- c(alp.index.cc(map, i), map$bet[[i]])
     gam <- para[id]
-    rx <- ref[, names(gam), drop = FALSE]
+    rx <- as.matrix(ref[, names(gam), drop = FALSE])
     
     rho.i <- ncase[i, i] / nctrl[i, i]
     const[[i]] <- rx * (Delta / (1 + rho.i * delta[, i]))

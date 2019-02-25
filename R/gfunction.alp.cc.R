@@ -6,7 +6,6 @@ gfunction.alp.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
   
   g.alp <- list()
   
-  ref <- as.matrix(ref)
   n <- nrow(ref)
   nlam <- max(map$lam)
   offset <- max(map$the) - 1
@@ -27,7 +26,7 @@ gfunction.alp.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
     id <- c(id.a, id.b)
     gam <- para[id]
     
-    rx <- ref[, names(gam), drop = FALSE]
+    rx <- as.matrix(ref[, names(gam), drop = FALSE])
     rho.i <- ncase[i, i] / nctrl[i, i]
     const <- rx * (delta[, i] * (1 + rho.i * Delta) / (1 + rho.i * delta[, i])^2)
     

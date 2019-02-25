@@ -5,7 +5,6 @@ gfunction.the.alp.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
   nmodel <- length(map$bet)
   
   the <- para[map$the]
-  ref <- as.matrix(ref)
   
   g.the.alp <- list()
   
