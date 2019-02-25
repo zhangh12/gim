@@ -15,6 +15,13 @@ init.lm <- function(formula, data, model, nsample){
   
   #message('Initializing integration analysis...')
   
+  if(is.null(nsample)){
+    msg <- 'nsample could not be NULL'
+    stop(msg)
+  }
+  
+  nsample <- as.matrix(nsample)
+  
   fit0 <- glm(formula, data = data, family = 'gaussian')
   the <- c(mean(fit0$residuals^2), coef(fit0))
   names(the)[1] <- 'sigma'
@@ -80,7 +87,7 @@ init.lm <- function(formula, data, model, nsample){
   map$all.alp <- all.alp
   map$all.bet <- all.bet
   
-  list(para = para, map = map, bet0 = bet0)
+  list(para = para, map = map, bet0 = bet0, sample.info = nsample)
   
 }
 

@@ -1,9 +1,8 @@
 
 
-gim.default <- function(formula, family, data, model, nsample, ref = NULL, niter = 2){
-  
-  nsample <- as.matrix(nsample)
-  formula <- as.formula(formula)
+gim.default <- function(formula, family, data, model, 
+                        nsample = NULL, ncase = NULL, nctrl = NULL, 
+                        ref = NULL, niter = 2){
   
   fp <- formula.parse(formula, model, data, ref)
   model <- fp$model
@@ -12,10 +11,13 @@ gim.default <- function(formula, family, data, model, nsample, ref = NULL, niter
   outcome <- fp$outcome
   formula <- fp$formula
   
-  ini <- init(formula, family, data, model, nsample)
+  ini <- init(formula, family, data, model, nsample, ncase, nctrl, outcome)
   para <- ini$para
   map <- ini$map
   bet0 <- ini$bet0
+  pr0 <- ini$pr0
+  Delta <- ini$Delta
+  sample.info <- ini$sample.info
   
   if(niter < 2){
     stop('niter should at least be 2')
@@ -23,13 +25,13 @@ gim.default <- function(formula, family, data, model, nsample, ref = NULL, niter
   
   while(niter > 0){
     #message('Running Newton-Raphson algorithm on first stage...')
-    V <- optimal.Sigma0(para, map, family, ref, model, nsample, outcome)
-    fit <- NR(para, map, family, data, ref, V, bet0, outcome)
+    V <- optimal.Sigma0(para, map, family, ref, model, sample.info, pr0, Delta, outcome)
+    fit <- NR(para, map, family, data, ref, V, bet0, sample.info, outcome)
     para <- fit$coefficients
     niter <- niter - 1
   }
   
-  fit$vcov <- mcov(fit$coefficients, map, family, data, ref, model, nsample, V, bet0, outcome)
+  fit$vcov <- mcov(fit$coefficients, map, family, data, ref, model, sample.info, V, bet0, outcome)
   
   fit <- reorganize(fit, map, family)
   

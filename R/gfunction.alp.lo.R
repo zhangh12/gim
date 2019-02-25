@@ -6,9 +6,6 @@ gfunction.alp.lo <- function(para, map, data){
   
   nmodel <- length(map$bet)
   
-  the <- para[map$the]
-  fx <- as.matrix(data[, names(the), drop = FALSE])
-  
   g.alp <- list()
   
   n <- nrow(data)

@@ -1,7 +1,7 @@
 #exportPattern("^[[:alpha:]]+")
 importFrom(stats, coef, cov, glm, printCoefmat, pchisq)
 importFrom(stats, as.formula, model.frame, model.matrix)
-importFrom(numDeriv, jacobian)
+importFrom(numDeriv, jacobian, grad)
 export(gim)
 S3method(summary, gim)
 S3method(vcov, gim)

@@ -1,6 +1,8 @@
 
 
-gim <- function(formula, family, data, model, nsample, ref = NULL, niter = 2){
+gim <- function(formula, family, data, model, 
+                nsample = NULL, ncase = NULL, nctrl = NULL,
+                ref = NULL, niter = 2){
   
   UseMethod('gim')
   

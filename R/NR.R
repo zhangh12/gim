@@ -1,6 +1,6 @@
 
 # Newton-Raphson algorithm
-NR <- function(para, map, family, data, ref, V, bet0, outcome){
+NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome){
   
   inv.V <- solve(V)
   np <- length(para)
@@ -18,6 +18,13 @@ NR <- function(para, map, family, data, ref, V, bet0, outcome){
       #s1 <- grad(obj.lo, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, outcome = outcome)
     }
     
+    if(family == 'case-control'){
+      s0 <- score.cc(para, map, data, ref, inv.V, bet0, sample.info, outcome)
+      #s1 <- grad(obj.cc, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, sample.info = sample.info, outcome = outcome)
+    }
+    
+    cat('iter = ', i+1, '\t', max(abs(s0)), '           \r')
+    
     if(all(abs(s0) < 1e-6)){
       break
     }
@@ -30,6 +37,10 @@ NR <- function(para, map, family, data, ref, V, bet0, outcome){
       t0 <- try(inv.h0 <- solve(hess.lo(para, map, data, ref, inv.V, bet0, outcome)), silent = TRUE)
     }
     
+    if(family == 'case-control'){
+      t0 <- try(inv.h0 <- solve(hess.cc(para, map, data, ref, inv.V, bet0, sample.info, outcome)), silent = TRUE)
+    }
+    
     if('try-error' %in% class(t0)){
       return(list(coefficients = para.null, score = para.null, conv =0))
     }
@@ -40,7 +51,7 @@ NR <- function(para, map, family, data, ref, V, bet0, outcome){
     para <- para - d0
     
     i <- i + 1
-    #print(s0)
+    
   }
   
   #svd(inv.h0)$d

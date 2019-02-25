@@ -1,14 +1,12 @@
 
 
-obj.lm <- function(para, para.id, map, data, ref, inv.V, bet0, outcome){
+obj.lm <- function(para, map, data, ref, inv.V, bet0, outcome){
   
   data$'(Intercept)' <- 1
   
   nmodel <- length(map$bet)
-  nlam <- max(map$lam)
   
   lam <- para[map$lam]
-  
   sigma <- para[map$the[1]]
   the <- para[map$the[-1]]
   fx <- as.matrix(data[, names(the), drop = FALSE])
@@ -19,7 +17,6 @@ obj.lm <- function(para, para.id, map, data, ref, inv.V, bet0, outcome){
   
   pr <- as.vector(1/(1+g %*% lam))
   
-  np <- length(para)
   n <- nrow(data)
   
   bet <- para[map$all.bet]

@@ -10,6 +10,10 @@ reorganize <- function(fit, map, family){
     fit <- reorganize.lo(fit, map)
   }
   
+  if(family == 'case-control'){
+    fit <- reorganize.cc(fit, map)
+  }
+  
   fit
   
 }

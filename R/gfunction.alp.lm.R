@@ -6,7 +6,6 @@ gfunction.alp.lm <- function(para, map, data){
   
   nmodel <- length(map$bet)
   
-  sigma <- para[map$the[1]]
   the <- para[map$the[-1]]
   fx <- as.matrix(data[, names(the), drop = FALSE])
   

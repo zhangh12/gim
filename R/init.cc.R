@@ -1,27 +1,42 @@
 
-# lam: Lagrange multiplier
+# lam: Lagrange multiplier, first one 
 # the: parameters in full model (internal data)
 # alp: nuisance parameter in working model (external data)
 # bet: parameters in working model (with summary data)
 # para := c(lam, the, alp, bet)
 # bet0 := summary statistics to be used in quadratic form
+# pr0 := empirical distribution of controls, computed from internal data
+# Delta := exp(X * gam), X is augmented design matrix, and pr0 = 1/(1+n1/n0 * Delta)/n0
 
-
-init.lo <- function(formula, data, model, nsample){
+init.cc <- function(formula, data, model, ncase, nctrl, outcome){
   
   #message('Initializing integration analysis...')
   
-  if(is.null(nsample)){
-    msg <- 'nsample could not be NULL'
+  if(is.null(ncase)){
+    msg <- 'ncase could not be NULL'
     stop(msg)
   }
   
-  nsample <- as.matrix(nsample)
+  if(is.null(nctrl)){
+    msg <- 'nctrl could not be NULL'
+    stop(msg)
+  }
+  
+  ncase <- as.matrix(ncase)
+  nctrl <- as.matrix(nctrl)
   
   fit0 <- glm(formula, data = data, family = 'binomial')
   the <- coef(fit0)
   
-  n <- nrow(data)
+  n1 <- sum(data[, outcome])
+  n0 <- sum(1 - data[, outcome])
+  n <- effective.sample.size(n0, n1) # effective sample size
+  
+  pr0 <- (1-fit0$fitted.values)/n0
+  # sum(pr0) == 1
+  Delta <- exp(fit0$linear.predictors) * n0/n1
+  # sum(1/(1+n1/n0 * Delta)/n0) == 1
+  
   nmodel <- length(model)
   
   alp <- NULL
@@ -39,7 +54,7 @@ init.lo <- function(formula, data, model, nsample){
     fit <- glm(form, data = data, family = 'binomial')
     alp.var <- as.character(model[[i]][[2]])
     bet.var <- as.character(model[[i]][[3]]$var) # critical for meta-analysis of bet below
-    N <- diag(nsample)[i]
+    N <- effective.sample.size(diag(ncase)[i], diag(nctrl)[i])
     alp0 <- coef(fit)[alp.var]
     meta.bet <- (n * coef(fit)[bet.var] + N * model[[i]][[3]]$bet) / (n + N)
     #meta.bet <- model[[i]][[3]]$bet
@@ -63,8 +78,9 @@ init.lo <- function(formula, data, model, nsample){
   map$alp[[1]] <- NULL
   map$bet[[1]] <- NULL
   
-  nlam <- length(alp) + length(bet)
-  lam <- rep(0.01, nlam)
+  # 1 is for lam in paper for constrain E0(Delta - 1) = 0
+  nlam <- 1 + length(alp) + length(bet)
+  lam <- c(n1/(n1 + n0), rep(0.01, nlam - 1))
   names(lam) <- paste0('lam', 1:nlam)
   
   para <- c(lam, the, alp, bet)
@@ -88,10 +104,18 @@ init.lo <- function(formula, data, model, nsample){
     }
   }
   
-  map$all.alp <- sort(unique(all.alp))
+  all.alp <- sort(unique(all.alp))
+  if(max(all.alp) == 0){
+    map$all.alp <- NULL
+  }else{
+    map$all.alp <- sort(unique(all.alp))
+  }
+  
   map$all.bet <- sort(unique(all.bet))
   
-  list(para = para, map = map, bet0 = bet0, sample.info = nsample)
+  list(para = para, map = map, bet0 = bet0, 
+       sample.info = list(ncase = ncase, nctrl = nctrl), 
+       pr0 = pr0, Delta = Delta)
   
 }
 

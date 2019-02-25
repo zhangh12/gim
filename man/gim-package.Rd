@@ -5,14 +5,14 @@
 Generalized Integration Model
 }
 \description{
-\code{gim} implements the generalized integration model proposed in Zhang et al. (2018). \code{gim} integrates individual-level data and summary statistics under a generalized linear model framework. It supports continuous and binary outcomes to be modeled by the linear and logistic regression models. 
+\code{gim} implements the generalized integration model proposed in Zhang et al. (2018). \code{gim} integrates individual-level data and summary statistics under a generalized linear model framework. It supports continuous and binary outcomes to be modeled by the linear and logistic regression models. For binary outcome, data can be sampled in prospective cohort studies or case-control studies. \code{gim} uses \bold{\emph{different}} methods to model binary outcome under \bold{\emph{different}} designs. 
 }
 \details{
 \tabular{ll}{
 Package: \tab gim\cr
 Type: \tab Package\cr
-Version: \tab 0.11.0\cr
-Date: \tab 2018-03-12\cr
+Version: \tab 0.17.0\cr
+Date: \tab 2019-02-25\cr
 License: \tab MIT + file LICENSE\cr
 }
 

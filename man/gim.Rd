@@ -5,10 +5,11 @@
 Fitting Generalized Integration Models
 }
 \description{
-\code{gim} is used to fit generalized integration models, which assume linear or logistic regression model on a given (internal) data, while integrating auxiliary or summary information of relevant variables that are estimated from external data, on which different working models could be assumed. Compared to conventional regression model, e.g., \code{\link[stats]{glm}}, based on internal data, the estimate of \code{gim} method gains additional power by making maximum use of all kinds of available data. 
+\code{gim} is used to fit generalized integration models, which assume linear or logistic regression model on an (internal) individual-level data, while integrating auxiliary or summary information of relevant variables that are estimated from external data, on which different working models could be assumed. Compared to conventional regression model, e.g., \code{\link[stats]{glm}}, based on internal data, the estimate of \code{gim} method gains additional power by making maximum use of all kinds of available data. 
 }
 \usage{
-gim(formula, family, data, model, nsample, ref = NULL, niter = 2)
+gim(formula, family, data, model, nsample = NULL, 
+    ncase = NULL, nctrl = NULL, ref = NULL, niter = 2)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -16,19 +17,25 @@ gim(formula, family, data, model, nsample, ref = NULL, niter = 2)
 an object of class "\code{\link[stats]{formula}}" (or one that can be coerced to that class): a symbolic description of the model to be fitted on the given dataset. More details of model specification are illustrated in 'Details' and 'Examples'.
 }
   \item{family}{
-'gaussian' for linear regression or 'binomial' for logistic regression. 
+a character. \code{"gaussian"} for linear regression. For logistic regression, use \code{"binomial"} for random sample, or \code{"case-control"} for case-control data. Case-control data requests different method in \code{gim} to make inference. 
 }
   \item{data}{
-a data frame containing the variables specified in \code{formula} and \code{model}. 
+a data frame containing all variables that are specified in \code{formula} and \code{model}. 
 }
   \item{model}{
 a list describing auxiliary information and working models that are used to generate such information. See 'Details' and 'Examples' for more details.
 }
   \item{nsample}{
-a matrix specifying the number of samples shared in datasets that are used to fit the working models given in \code{model}. See 'Details' and 'Examples' for more details.
+a matrix specifying the number of samples shared in datasets that are used to fit the working models given in \code{model}. Specify this argument when \code{family} is \code{"gaussian"} or \code{"binomial"}, otherwise \code{NULL}. See 'Details' and 'Examples' for more details.
+}
+  \item{ncase}{
+a matrix specifying the number of cases shared in datasets that are used to fit the working models given in \code{model}. Specify this argument when \code{family} is \code{"case-control"}, otherwise \code{NULL}. \code{ncase} and \code{nctrl} should be specified simultaneously. See 'Details' and 'Examples' for more details.
+}
+  \item{nctrl}{
+a matrix specifying the number of controls shared in datasets that are used to fit the working models given in \code{model}. Specify this argument when \code{family} is \code{case-control}, otherwise \code{NULL}. See 'Details' and 'Examples' for more details.
 }
   \item{ref}{
-a data frame containing the covariates specified in \code{formula} and \code{model}. It is the reference sample for modeling summary statistics in \code{model}. This assumes that \code{ref} is sampled from the external population. 
+a data frame containing the covariates specified in \code{formula} and \code{model}. It is the reference sample for modeling summary statistics in \code{model}. This assumes that \code{ref} is sampled from the external population. By default it is \code{NULL} which means that the internal and external populations are the same, therefore \code{gim} will use \code{data} as the reference. Outcome could be absent or missing in \code{ref} because \code{gim} will ignore it. See 'Details' for more details. 
 }
   \item{niter}{
 for test purpose, use its default value. 
@@ -48,7 +55,13 @@ Note that multiple working models could be fitted on the same external data, in 
 \code{gim} requires an internal dataset \code{data} in which individual-level samples are available. Statistically, this data is critical to provide information of correlation between covariates. This data is also known as the reference data in the literatures. Since general formula is supported in \code{gim}, it is important to provide variables in \code{data} so that \code{R} can find columns of all variables parsed from formulas in \code{formula} and \code{model}. Read vignettes (upcoming) for more examples about how to create a proper \code{data} for \code{gim}. We will also release a function to help users with this. 
 
 \bold{\code{nsample} }
-Some of summary information can be calculated from datasets that share samples. Ignoring this will lead to underestimated standard error. For example, if a dataset is studied by two different models, the estimates from these two models are not independent but highly correlated. Therefore, this correlation must be properly handled when calculating the standard error of \code{gim} estimate, from which a hypothesis testing is conducted. \code{nsample} is a squared matrix of dimension \code{p}, which is equal to the length of \code{model}. Thus, the (i,i) entry in \code{nsample} is the number of samples used in fitting the working model specified in \code{model[[i]]$form}, while the (i,k) entry is the number of samples that are involved in fitting working models \code{model[[i]]$form} and \code{model[[k]]$form}. For example, if two working models, e.g., \code{y ~ x1} and \code{y ~ x2} are fitted on the same dataset of 100 samples, then \code{nsample} is a matrix of all entries being 100. Read example below and vignettes (upcoming) for more examples. 
+Some of summary information can be calculated from datasets that share samples. Ignoring this will lead to underestimated standard error. For example, if a dataset is studied by two different models, the estimates from these two models are not independent but highly correlated. Therefore, this correlation must be properly handled when calculating the standard error of \code{gim} estimate, from which a hypothesis testing is conducted. \code{nsample} is a squared matrix of dimension \code{p}, which is equal to the length of \code{model}. Thus, the (i,i) entry in \code{nsample} is the number of samples used in fitting the working model specified in \code{model[[i]]$formula}, while the (i,k) entry is the number of samples that are involved in fitting working models \code{model[[i]]$formula} and \code{model[[k]]$formula}. For example, if two working models, e.g., \code{y ~ x1} and \code{y ~ x2} are fitted on the same dataset of 100 samples, then \code{nsample} is a matrix of all entries being 100. Read example below and vignettes (upcoming) for more examples. 
+
+\bold{\code{ncase} } and \bold{\code{nctrl} }
+Specify these two arguments when data are sampled from case-control studies. Refer to \code{nsample} for their formats. 
+
+\bold{\code{ref} }
+By default, \code{ref} is \code{NULL} if it is not specified explicitly. This assumes that the internal and external populations are the same. If this assumption holds, and you have additional covariates data (no outcome), e.g. \code{add.ref}, that also comes from the internal population, you can specified \code{ref} as \code{rbind(data, add.ref)} where the column of missing outcome in \code{add.ref} is set as \code{NA}. You can also rbind \code{data} and \code{add.ref}, with outcome in \code{data} being deleted. If the external population is different from the internal population, you have to set pass \code{add.ref} to \code{ref} as reference. 
 
 }
 \value{
@@ -87,7 +100,7 @@ form
 # In this example, summary data are calculated from two working models, 
 # thus model is a list of length 2. 
 #
-# Estimates of a subset of variables in model[[1]]$form are given in 
+# Estimates of a subset of variables in model[[1]]$formula are given in 
 # model[[1]]$info, except for the intercept and subtypeC (estimated but missed). 
 #
 # If you want to provide estimate of intercept, you can add it to $info by 

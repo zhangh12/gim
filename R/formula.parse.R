@@ -50,6 +50,7 @@ formula.parse <- function(formula, model, data, ref = NULL){
   }
   ref <- ref[, colnames(data)]
   data <- rbind(data, ref)
+  data$'(Intercept)' <- 1
   
   form0 <- as.formula(formula)
   
