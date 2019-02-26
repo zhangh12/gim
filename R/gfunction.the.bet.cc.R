@@ -1,6 +1,6 @@
 
 
-gfunction.the.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
+gfunction.the.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi){
   
   nmodel <- length(map$bet)
   
@@ -38,7 +38,8 @@ gfunction.the.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
         fxl <- ref[, names(para)[l]]
         gt <- matrix(0, nrow = n, ncol = nlam)
         gt[, id - offset] <- tmp * fxl
-        g.the.bet[[foo(j,l)]] <- gt
+        #g.the.bet[[foo(j,l)]] <- gt
+        g.the.bet[[foo(j,l)]] <- gt[, -1, drop = FALSE] %*% xi
         rm(gt)
       }
     }

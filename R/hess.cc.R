@@ -106,7 +106,7 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
     paste0(j,'-',l)
   }
   
-  g.the2 <- gfunction.the2.cc(para, map, ref, Delta, delta, ncase, nctrl)
+  g.the2 <- gfunction.the2.cc(para, map, ref, Delta, delta, ncase, nctrl, xi)
   the <- para[map$the]
   fx <- as.matrix(ref[, names(the), drop = FALSE])
   for(j in 1:nthe){
@@ -116,28 +116,20 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
       id.l <- map$the[l]
       fxl <- fx[, names(the)[l]]
       h[id.j, id.l] <- -lam[1] * sum(Delta * fxj * fxl * pr) -
-        t(g.the2[[foo(j,l)]][, -1, drop = FALSE] %*% xi) %*% pr +
+        #t(g.the2[[foo(j,l)]][, -1, drop = FALSE] %*% xi) %*% pr +
+        t(g.the2[[foo(j,l)]]) %*% pr +
         sum((lam[1] * Delta * fxj + as.vector(g.the[[j]][, -1, drop = FALSE] %*% xi)) * 
               (lam[1] * Delta * fxl + as.vector(g.the[[l]][, -1, drop = FALSE] %*% xi)) * pr2)
       h[id.l, id.j] <- t(h[id.j, id.l])
     }
   }
+  rm(g.the2)
+  gc()
   
   ####### ell.the.alp
   
-  foo1 <- function(alp1, para, map, ref, ncase, nctrl){
-    para[18] <- alp1
-    tilt <- tilt.cc(para, map, ref)
-    Delta <- tilt$Delta
-    delta <- tilt$delta
-    sum(gfunction.the.cc(para, map, ref, Delta, delta, ncase, nctrl)[[1]][, 2])
-  }
-  
-  gr <- grad(foo1, para[18], para=para, map = map, ref = ref, ncase = ncase, nctrl = nctrl)
-  
-  
   if(!is.null(map$all.alp)){
-    g.the.alp <- gfunction.the.alp.cc(para, map, ref, Delta, delta, ncase, nctrl)
+    g.the.alp <- gfunction.the.alp.cc(para, map, ref, Delta, delta, ncase, nctrl, xi)
     for(j in 1:nthe){
       id.j <- map$the[j]
       fxj <- fx[, names(the)[j]]
@@ -151,17 +143,21 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
         
         for(l in id.a){
           k <- k + 1
-          h[id.j, l] <- -sum((g.the.alp[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+          #h[id.j, l] <- -sum((g.the.alp[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+          h[id.j, l] <- -sum(g.the.alp[[foo(j, l)]] * pr) + 
             sum((g.alp[[k]][, -1, drop = FALSE] %*% xi) * tmp)
           h[l, id.j] <- t(h[id.j, l])
         }
       }
     }
+    
+    rm(g.the.alp)
+    gc()
   }
   
   ####### ell.the.bet
   
-  g.the.bet <- gfunction.the.bet.cc(para, map, ref, Delta, delta, ncase, nctrl)
+  g.the.bet <- gfunction.the.bet.cc(para, map, ref, Delta, delta, ncase, nctrl, xi)
   for(j in 1:nthe){
     id.j <- map$the[j]
     fxj <- fx[, names(the)[j]]
@@ -172,17 +168,21 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
       
       for(l in id.b){
         k <- k + 1
-        h[id.j, l] <- -sum((g.the.bet[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+        #h[id.j, l] <- -sum((g.the.bet[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+        h[id.j, l] <- -sum(g.the.bet[[foo(j, l)]] * pr) + 
           sum((g.bet[[k]][, -1, drop = FALSE] %*% xi) * tmp)
         h[l, id.j] <- t(h[id.j, l])
       }
     }
   }
   
+  rm(g.the.bet)
+  gc()
+  
   ####### ell.alp.alp
   
   if(!is.null(map$all.alp)){
-    g.alp2 <- gfunction.alp2.cc(para, map, ref, Delta, delta, ncase, nctrl)
+    g.alp2 <- gfunction.alp2.cc(para, map, ref, Delta, delta, ncase, nctrl, xi)
     
     kk <- 1:length(map$all.alp)
     names(kk) <- as.character(map$all.alp)
@@ -201,12 +201,16 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
             next
           }
           
-          h[j, l] <- -sum((g.alp2[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+          #h[j, l] <- -sum((g.alp2[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+          h[j, l] <- -sum(g.alp2[[foo(j, l)]] * pr) + 
             sum(tmp * (g.alp[[kk[as.character(l)]]][, -1, drop = FALSE] %*% xi) * pr2)
           h[l, j] <- t(h[j, l])
         }
       }
     }
+    
+    rm(g.alp2)
+    gc()
     
     k <- 0
     for(j in map$all.alp){
@@ -230,7 +234,7 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   ####### ell.alp.bet
   
   if(!is.null(map$all.alp)){
-    g.alp.bet <- gfunction.alp.bet.cc(para, map, ref, Delta, delta, ncase, nctrl)
+    g.alp.bet <- gfunction.alp.bet.cc(para, map, ref, Delta, delta, ncase, nctrl, xi)
     
     kk <- 1:length(map$all.bet)
     names(kk) <- as.character(map$all.bet)
@@ -246,12 +250,16 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
         k <- k + 1
         tmp <- g.alp[[k]][, -1, drop = FALSE] %*% xi
         for(l in id.b){
-          h[j, l] <- -sum((g.alp.bet[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+          #h[j, l] <- -sum((g.alp.bet[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+          h[j, l] <- -sum(g.alp.bet[[foo(j, l)]] * pr) + 
             sum(tmp * (g.bet[[kk[as.character(l)]]][, -1, drop = FALSE] %*% xi) * pr2)
           h[l, j] <- t(h[j, l])
         }
       }
     }
+    
+    rm(g.alp.bet)
+    gc()
     
     k <- 0
     for(j in map$all.alp){
@@ -271,7 +279,7 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   
   ####### ell.bet.bet
   
-  g.bet2 <- gfunction.bet2.cc(para, map, ref, Delta, delta, ncase, nctrl)
+  g.bet2 <- gfunction.bet2.cc(para, map, ref, Delta, delta, ncase, nctrl, xi)
   kk <- 1:length(map$all.bet)
   names(kk) <- as.character(map$all.bet)
   k <- 0
@@ -286,12 +294,16 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
           next
         }
         
-        h[j, l] <- -sum((g.bet2[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+        #h[j, l] <- -sum((g.bet2[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
+        h[j, l] <- -sum(g.bet2[[foo(j, l)]] * pr) + 
           sum(tmp * (g.bet[[kk[as.character(l)]]][, -1, drop = FALSE] %*% xi) * pr2)
         h[l, j] <- t(h[j, l])
       }
     }
   }
+  
+  rm(g.bet2)
+  gc()
   
   k <- 0
   for(j in map$all.bet){

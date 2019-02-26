@@ -1,6 +1,6 @@
 
 
-gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
+gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi = NULL){
   
   nmodel <- length(map$bet)
   
@@ -39,7 +39,8 @@ gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
         gt[, id - offset] <- const[[i]] * fxj * fxl
       }
       
-      g.the2[[foo(j,l)]] <- gt
+      # g.the2[[foo(j,l)]] <- gt
+      g.the2[[foo(j,l)]] <- gt[, -1, drop = FALSE] %*% xi
       rm(gt)
     }
   }

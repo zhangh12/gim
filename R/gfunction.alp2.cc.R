@@ -1,6 +1,6 @@
 
 
-gfunction.alp2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
+gfunction.alp2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi){
   
   nmodel <- length(map$bet)
   
@@ -43,7 +43,8 @@ gfunction.alp2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
         fxl <- ref[, names(para)[l]]
         gt <- matrix(0, nrow = n, ncol = nlam)
         gt[, id - offset] <- tmp * fxl
-        g.alp2[[foo(j,l)]] <- gt
+        #g.alp2[[foo(j,l)]] <- gt
+        g.alp2[[foo(j,l)]] <- gt[, -1, drop = FALSE] %*% xi
       }
     }
   }

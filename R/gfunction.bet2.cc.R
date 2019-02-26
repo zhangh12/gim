@@ -1,6 +1,6 @@
 
 
-gfunction.bet2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
+gfunction.bet2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi){
   
   nmodel <- length(map$bet)
   
@@ -41,7 +41,8 @@ gfunction.bet2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
         fxl <- ref[, names(para)[l]]
         gt <- matrix(0, nrow = n, ncol = nlam)
         gt[, id - offset] <- tmp * fxl
-        g.bet2[[foo(j,l)]] <- gt
+        #g.bet2[[foo(j,l)]] <- gt
+        g.bet2[[foo(j,l)]] <- gt[, -1, drop = FALSE] %*% xi
       }
     }
   }
