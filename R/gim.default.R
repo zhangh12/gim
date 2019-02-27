@@ -4,6 +4,8 @@ gim.default <- function(formula, family, data, model,
                         nsample = NULL, ncase = NULL, nctrl = NULL, 
                         ref = NULL, niter = 2){
   
+  data <- clean.data(data)
+  
   fp <- formula.parse(formula, model, data, ref)
   model <- fp$model
   data <- fp$data

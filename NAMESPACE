@@ -1,6 +1,7 @@
 #exportPattern("^[[:alpha:]]+")
 importFrom(stats, coef, cov, glm, printCoefmat, pchisq)
 importFrom(stats, as.formula, model.frame, model.matrix)
+importFrom(stats, complete.cases, sd)
 importFrom(numDeriv, jacobian, grad)
 export(gim)
 S3method(summary, gim)
