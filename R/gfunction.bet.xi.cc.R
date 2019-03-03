@@ -1,6 +1,6 @@
 
 
-gfunction.bet.xi <- function(g.bet, xi){
+gfunction.bet.xi.cc <- function(g.bet, xi){
   
   n <- nrow(g.bet[[1]])
   nbet <- length(g.bet)

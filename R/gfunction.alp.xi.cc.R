@@ -1,6 +1,6 @@
 
 
-gfunction.alp.xi <- function(g.alp, xi){
+gfunction.alp.xi.cc <- function(g.alp, xi){
   
   if(is.null(g.alp)){
     return(NULL)

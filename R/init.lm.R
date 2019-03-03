@@ -75,15 +75,18 @@ init.lm <- function(formula, data, model, nsample){
   
   map$lam <- 1:nlam
   map$the <- (nlam + 1) : (nlam + nthe)
+  all.tau <- NULL
   all.alp <- NULL
   all.bet <- NULL
   for(i in 1:nmodel){
     map$alp[[i]] <- map$alp[[i]] + nlam + nthe
     map$bet[[i]] <- map$bet[[i]] + nlam + nthe + nalp
+    all.tau <- c(all.tau, map$alp[[i]][1])
     all.alp <- c(all.alp, map$alp[[i]])
     all.bet <- c(all.bet, map$bet[[i]])
   }
   
+  map$all.tau <- all.tau
   map$all.alp <- all.alp
   map$all.bet <- all.bet
   

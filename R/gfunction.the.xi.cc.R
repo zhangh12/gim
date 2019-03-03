@@ -1,5 +1,5 @@
 
-gfunction.the.xi <- function(g.the, xi){
+gfunction.the.xi.cc <- function(g.the, xi){
   
   n <- nrow(g.the[[1]])
   nthe <- length(g.the)

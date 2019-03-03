@@ -1,4 +1,5 @@
 
+# data is not necessary if numerical derivative is not used
 hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   
   if(0){
@@ -31,9 +32,9 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   g.bet <- gfunction.bet.cc(para, map, ref, Delta, delta, ncase, nctrl)
   
   g.xi <- as.vector(g[, -1, drop = FALSE] %*% xi)
-  g.the.xi <- gfunction.the.xi(g.the, xi)
-  g.alp.xi <- gfunction.alp.xi(g.alp, xi)
-  g.bet.xi <- gfunction.alp.xi(g.bet, xi)
+  g.the.xi <- gfunction.the.xi.cc(g.the, xi)
+  g.alp.xi <- gfunction.alp.xi.cc(g.alp, xi)
+  g.bet.xi <- gfunction.alp.xi.cc(g.bet, xi)
   
   pr <- as.vector(1/(1+g %*% lam))
   pr2 <- pr^2

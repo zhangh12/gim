@@ -2,8 +2,6 @@
 
 gfunction.the.lo <- function(para, map, data){
   
-  data$'(Intercept)' <- 1
-  
   nmodel <- length(map$bet)
   
   the <- para[map$the]

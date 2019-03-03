@@ -1,18 +1,16 @@
 
 
-gfunction.bet.lm <- function(para, map, data){
-  
-  data$'(Intercept)' <- 1
+gfunction.bet.lm <- function(para, map, ref){
   
   nmodel <- length(map$bet)
   
   sigma <- para[map$the[1]]
   the <- para[map$the[-1]]
-  fx <- as.matrix(data[, names(the), drop = FALSE])
+  fx <- as.matrix(ref[, names(the), drop = FALSE])
   
   g.bet <- list()
   
-  n <- nrow(data)
+  n <- nrow(ref)
   nlam <- max(map$lam)
   offset <- max(map$the)
   
@@ -33,7 +31,7 @@ gfunction.bet.lm <- function(para, map, data){
     bet <- para[id.b]
     gam <- c(alp, bet)
     
-    rx <- as.matrix(data[, names(gam), drop = FALSE])
+    rx <- as.matrix(ref[, names(gam), drop = FALSE])
     
     delta <- as.vector(fx %*% the - rx %*% gam)
     

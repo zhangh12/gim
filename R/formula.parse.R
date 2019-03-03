@@ -85,6 +85,25 @@ formula.parse <- function(formula, model, data, ref = NULL){
   for(i in 1:nform){
     f <- as.formula(model[[i]]$form)
     mat <- model.matrix(f, data = data) # desing matrix for working model
+    var.in.form <- colnames(mat)
+    add.var <- setdiff(var.in.form, model[[i]]$info$var)
+    if(length(add.var) > 0){
+      tmp1 <- mat[, add.var, drop = FALSE]
+      tmp2 <- mat[, model[[i]]$info$var, drop = FALSE]
+      rm.col <- NULL
+      for(j in 1:ncol(tmp1)){
+        for(k in 1:ncol(tmp2)){
+          if(all(tmp1[, j] == tmp2[, k])){
+            rm.col <- c(rm.col, j)
+          }
+        }
+      }
+      if(!is.null(rm.col)){
+        rm.col <- colnames(tmp1)[rm.col]
+        mat <- mat[, setdiff(var.in.form, rm.col), drop = FALSE]
+      }
+    }
+    
     new.var <- setdiff(colnames(mat), colnames(mat0))
     if(length(new.var) > 0){
       mat0 <- cbind(mat0, mat[, new.var, drop = FALSE])

@@ -1,21 +1,21 @@
 
 # alp for each model: tau (alp[1]), coefficients for covariates x (if any, including intercept)
-# by adding a constant column in 'data', we do not distinguish intercept and other coefficients
+# by adding a constant column in 'ref', we do not distinguish intercept and other coefficients
 # for each model, define 
 # g = 
 # (x * the - phi(x) * alp[-1])^2 + sigma - tau
 # (x * the - phi(x) * alp[-1]) * phi(x)
-gfunction.lm <- function(para, map, data){
+gfunction.lm <- function(para, map, ref){
   
-  data$'(Intercept)' <- 1
+  ref$'(Intercept)' <- 1
   
   nmodel <- length(map$bet)
   
   sigma <- para[map$the[1]]
   the <- para[map$the[-1]]
-  fx <- as.matrix(data[, names(the), drop = FALSE])
+  fx <- as.matrix(ref[, names(the), drop = FALSE])
   
-  n <- nrow(data)
+  n <- nrow(ref)
   nlam <- max(map$lam)
   g <- matrix(0, nrow = n, ncol = nlam)
   offset <- max(map$the)
@@ -35,7 +35,7 @@ gfunction.lm <- function(para, map, data){
     bet <- para[id.b]
     gam <- c(alp, bet)
     
-    rx <- as.matrix(data[, names(gam), drop = FALSE])
+    rx <- as.matrix(ref[, names(gam), drop = FALSE])
     
     delta <- as.vector(fx %*% the - rx %*% gam)
     
