@@ -2,8 +2,6 @@
 
 obj.lm <- function(para, map, data, ref, inv.V, bet0, outcome){
   
-  data$'(Intercept)' <- 1
-  
   nmodel <- length(map$bet)
   
   lam <- para[map$lam]

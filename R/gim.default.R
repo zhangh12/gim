@@ -20,6 +20,7 @@ gim.default <- function(formula, family, data, model,
   pr0 <- ini$pr0
   Delta <- ini$Delta
   sample.info <- ini$sample.info
+  tau <- ini$tau
   
   if(niter < 2){
     stop('niter should at least be 2')
@@ -27,7 +28,7 @@ gim.default <- function(formula, family, data, model,
   
   while(niter > 0){
     #message('Running Newton-Raphson algorithm on first stage...')
-    V <- optimal.Sigma0(para, map, family, ref, model, sample.info, pr0, Delta, outcome)
+    V <- optimal.Sigma0(para, map, family, ref, model, sample.info, pr0, Delta, tau, outcome)
     fit <- NR(para, map, family, data, ref, V, bet0, sample.info, outcome)
     para <- fit$coefficients
     niter <- niter - 1

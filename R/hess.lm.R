@@ -36,165 +36,84 @@ hess.lm <- function(para, map, data, ref, inv.V, bet0, outcome){
   pr <- as.vector(1/(1+g %*% lam))
   pr2 <- pr^2
   
-  ########## ell.lam.lam
+  ########## ell.lam.lam, done
   
   h[map$lam, map$lam] <- t(g) %*% (g * pr2)
   
-  ########## ell.lam.the (first one is for sigma)
+  ########## ell.lam.the (first one is for sigma), done
   
   nthe <- length(map$the)
   for(i in 1:nthe){
-    h[map$lam, map$the[i]] <- -t(g.the[[i]]) %*% pr + t(g) %*% (g.the.lam[, i] * pr2)
+    h[map$lam, map$the[i]] <- - t(g.the[[i]]) %*% pr + t(g) %*% (g.the.lam[, i] * pr2)
   }
   h[map$the, map$lam] <- t(h[map$lam, map$the])
   
-  ########## ell.lam.alp
   
-  # nalp > 0 as tau is in alp
-  nalp <- length(map$all.alp)
-  offset <- max(map$the)
-  for(i in 1:nalp){
-    h[map$lam, map$all.alp[i]] <- -t(g.alp[[i]]) %*% pr + t(g) %*% (g.alp.lam[, i] * pr2)
+  if(!is.null(map$all.alp)){
+    ########## ell.lam.alp, done
+    nalp <- length(map$all.alp)
+    offset <- max(map$the)
+    for(i in 1:nalp){
+      h[map$lam, map$all.alp[i]] <- -t(g.alp[[i]]) %*% pr + t(g) %*% (g.alp.lam[, i] * pr2)
+    }
+    h[map$all.alp, map$lam] <- t(h[map$lam, map$all.alp])
+    
+    ########## ell.the.alp (inc ell.sigma.alp), done
+    nthe <- length(map$the)
+    for(i in 1:nthe){
+      k <- 0
+      for(j in map$all.alp){
+        k <- k + 1
+        h[map$the[i], j] <- sum(g.the.lam[, i] * g.alp.lam[, k] * pr2)
+        h[j, map$the[i]] <- h[map$the[i], j]
+      }
+    }
   }
-  h[map$all.alp, map$lam] <- t(h[map$lam, map$all.alp])
   
-  ########## ell.lam.bet
+  ########## ell.lam.bet, done
   
   nbet <- length(map$all.bet)
   offset <- max(map$the)
   for(i in 1:nbet){
     h[map$lam, map$all.bet[i]] <- -t(g.bet[[i]]) %*% pr + t(g) %*% (g.bet.lam[, i] * pr2)
-    h[map$all.bet[i], map$lam] <- t(h[map$lam, map$all.bet[i]])
   }
   h[map$all.bet, map$lam] <- t(h[map$lam, map$all.bet])
   
-  ########## ell.sigma.sigma
+  ########## ell.the.the (not include sigma), done
+  # ell.sigma.sigma
+  h[map$the[1], map$the[1]] <- n/2/sigma^2 - 1/sigma^3 * sum(res^2)
   
-  h[map$the[1], map$the[1]] <- n/2/sigma^2 - 1/sigma^3 * sum(res^2) + sum(g.the.lam[, 1]^2 * pr2)
-  
-  ########## ell.sigma.the
-  
-  nthe <- length(map$the)
+  # ell.sigma.the
   h[map$the[1], map$the[-1]] <- -1/sigma^2 * t(t(fx) %*% res)
-  for(i in 2:nthe){
-    h[map$the[1], map$the[i]] <- h[map$the[1], map$the[i]] + sum(g.the.lam[, 1] * g.the.lam[, i] * pr2)
-    h[map$the[i], map$the[1]] <- t(h[map$the[1], map$the[i]])
-  }
+  h[map$the[-1], map$the[1]] <- t(h[map$the[1], map$the[-1]])
   
-  ########## ell.sigma.alp (first one is for tau)
-  
-  offset <- max(map$the)
-  for(j in map$all.alp){
-    h[map$the[1], j] <- sum(g.the.lam[, 1] * g.alp.lam[, j - offset] * pr2)
-    h[j, map$the[1]] <- h[map$the[1], j]
-  }
-  
-  ########## ell.sigma.bet
-  
-  offset <- max(map$all.alp)
-  for(j in map$all.bet){
-    h[map$the[1], j] <- sum(g.the.lam[, 1] * g.bet.lam[, j - offset] * pr2)
-    h[j, map$the[1]] <- h[map$the[1], j]
-  }
-  
-  ########## ell.the.the (not include sigma)
-  
-  foo <- function(j, l){
-    paste0(j,'-',l)
-  }
-  
-  g.the2 <- gfunction.the2.lm(para, map, ref, lam)
-  
-  if(0){
-    foo1 <- function(the.l, para, map, ref, lam, j, l){
-      
-      para[map$the[l]] <- the.l
-      sum(gfunction.the.lm(para, map, ref)[[j]] %*% lam)
-      
-    }
-  }
-  
-  if(0){
-    for(j in 2:length(map$the)){
-      for(l in j:length(map$the)){
-        tt <- grad(foo1, para[map$the[l]], para=para, map=map, ref=ref, lam=lam, j = j, l = l)
-        cat(j,'\t', l, '\t', tt, '\t', sum(g.the2[[foo(j,l)]]), '\t', tt-sum(g.the2[[foo(j,l)]]), '\n')
-      }
-    }
-  }
-  
-  
+  # ell.the.the
   h[map$the[-1], map$the[-1]] <- -1/sigma * (t(fx) %*% fx)
   nthe <- length(map$the)
-  for(j in 2:nthe){
+  for(j in 1:nthe){
     id.j <- map$the[j]
     for(l in j:nthe){
       id.l <- map$the[l]
-      h[id.j, id.l] <- h[id.j, id.l] - 
-        t(g.the2[[foo(j,l)]]) %*% pr + sum(g.the.lam[, j] * g.the.lam[, l] * pr2)
+      h[id.j, id.l] <- h[id.j, id.l] + sum(g.the.lam[, j] * g.the.lam[, l] * pr2)
       h[id.l, id.j] <- t(h[id.j, id.l])
     }
   }
   
-  ########## ell.the.alp (include tau)
-  
-  g.the.alp <- gfunction.the.alp.lm(para, map, ref, lam)
-  
+  ########## ell.the.bet, include ell.sigma.bet, done
   nthe <- length(map$the)
-  
-  for(j in 2:nthe){
-    id.j <- map$the[j]
+  for(i in 1:nthe){
     k <- 0
-    for(i in 1:nmodel){
-      id.tau <- map$alp[[i]][1]
+    for(j in map$all.bet){
       k <- k + 1
-      h[id.j, id.tau] <- sum(g.the.lam[, j] * g.alp.lam[, k] * pr2)
-      h[id.tau, id.j] <- h[id.j, id.tau]
-      id.a <- alp.index.lm(map, i)
-      if(is.null(id.a)){
-        next
-      }
-      
-      for(l in id.a){
-        k <- k + 1
-        h[id.j, l] <- -sum(g.the.alp[[foo(j,l)]] * pr) + sum(g.the.lam[, j] * g.alp.lam[, k] * pr2)
-        h[l, id.j] <- t(h[id.j, l])
-      }
+      h[map$the[i], j] <- sum(g.the.lam[, i] * g.bet.lam[, k] * pr2)
+      h[j, map$the[i]] <- h[map$the[i], j]
     }
   }
   
-  ########## ell.the.bet
-  
-  g.the.bet <- gfunction.the.bet.lm(para, map, ref, lam)
-  
-  nthe <- length(map$the)
-  
-  for(j in 2:nthe){
-    id.j <- map$the[j]
-    k <- 0
-    for(i in 1:nmodel){
-      id.tau <- map$alp[[i]][1]
-      id.b <- map$bet[[i]]
-      
-      for(l in id.b){
-        k <- k + 1
-        h[id.j, l] <- -sum(g.the.bet[[foo(j,l)]] * pr) + sum(g.the.lam[, j] * g.bet.lam[, k] * pr2)
-        h[l, id.j] <- t(h[id.j, l])
-      }
-    }
-  }
-  
-  ########## ell.alp.alp
-  
-  g.alp2 <- gfunction.alp2.lm(para, map, ref, lam)
-  
-  offset <- max(map$the)
+  ########## ell.alp.alp, done
   id.map.alp <- list()
   k <- 0
   for(i in 1:nmodel){
-    id.tau <- map$alp[[i]][1]
-    k <- k + 1
-    id.map.alp[[id.tau]] <- k
     id.a <- alp.index.lm(map, i)
     if(is.null(id.a)){
       next
@@ -206,68 +125,28 @@ hess.lm <- function(para, map, data, ref, inv.V, bet0, outcome){
     }
   }
   
-  # ell.tau.tau
-  for(i1 in 1:nmodel){
-    id.tau1 <- map$alp[[i1]][1]
-    for(i2 in i1:nmodel){
-      id.tau2 <- map$alp[[i2]][1]
-      
-      h[id.tau1, id.tau2] <- sum(g.alp.lam[, id.map.alp[[id.tau1]]] * 
-                                   g.alp.lam[, id.map.alp[[id.tau2]]] * pr2)
-      h[id.tau2, id.tau1] <- h[id.tau1, id.tau2]
-    }
-  }
-  
-  id.alp <- setdiff(map$all.alp, map$all.tau)
-  
-  # ell.alp.tau and ell.alp.alp
-  for(j in id.alp){
-    for(l in map$all.tau){
-      h[l, j] <- sum(g.alp.lam[, id.map.alp[[l]]] * g.alp.lam[, id.map.alp[[j]]] * pr2)
-      h[j, l] <- h[l, j]
-    }
-    
-    for(l in id.alp){
+  for(j in map$all.alp){
+    for(l in map$all.alp){
       if(l < j){
         next
       }
       
-      h[j, l] <- -sum(g.alp2[[foo(j,l)]] * pr) + 
-        sum(g.alp.lam[, id.map.alp[[j]]] * g.alp.lam[, id.map.alp[[l]]] * pr2)
+      h[j, l] <- sum(g.alp.lam[, id.map.alp[[j]]] * g.alp.lam[, id.map.alp[[l]]] * pr2)
       h[l, j] <- h[j, l]
     }
   }
   
-  ########## ell.tau.bet
-  
-  for(j in map$all.tau){
-    k <- 0
-    for(l in map$all.bet){
-      k <- k + 1
-      h[j, l] <- sum(g.alp.lam[, id.map.alp[[j]]] * g.bet.lam[, k] * pr2)
-      h[l, j] <- h[j, l]
-    }
-  }
-  
-  ########## ell.alp.bet
-  
-  g.alp.bet <- gfunction.alp.bet.lm(para, map, ref, lam)
-  
-  offset <- max(map$the)
-  id.alp <- setdiff(map$all.alp, map$all.tau)
+  ########## ell.alp.bet, done
   k <- 0
   for(j in map$all.bet){
     k <- k + 1
-    for(l in id.alp){
-      h[j, l] <- -sum(g.alp.bet[[foo(j,l)]] * pr) + 
-        sum(g.alp.lam[, id.map.alp[[l]]] * g.bet.lam[, k] * pr2)
+    for(l in map$all.alp){
+      h[j, l] <- sum(g.alp.lam[, id.map.alp[[l]]] * g.bet.lam[, k] * pr2)
       h[l, j] <- h[j, l]
     }
   }
   
   ########## ell.bet.bet
-  
-  g.bet2 <- gfunction.bet2.lm(para, map, ref, lam)
   id.map.bet <- list()
   k <- 0
   for(i in 1:nmodel){
@@ -275,14 +154,6 @@ hess.lm <- function(para, map, data, ref, inv.V, bet0, outcome){
     for(j in id.b){
       k <- k + 1
       id.map.bet[[j]] <- k
-      for(l in id.b){
-        if(l < j){
-          next
-        }
-        
-        h[j, l] <- -sum(g.bet2[[foo(j,l)]] * pr)
-        h[l, j] <- h[j, l]
-      }
     }
   }
   
@@ -291,7 +162,7 @@ hess.lm <- function(para, map, data, ref, inv.V, bet0, outcome){
       if(l < j){
         next
       }
-      h[j, l] <- h[j, l] + sum(g.bet.lam[, id.map.bet[[j]]] * g.bet.lam[, id.map.bet[[l]]] * pr2)
+      h[j, l] <- sum(g.bet.lam[, id.map.bet[[j]]] * g.bet.lam[, id.map.bet[[l]]] * pr2)
       h[l, j] <- h[j, l]
     }
   }
@@ -303,6 +174,7 @@ hess.lm <- function(para, map, data, ref, inv.V, bet0, outcome){
   
   colnames(h) <- names(para)
   rownames(h) <- names(para)
+  
   h
   
 }

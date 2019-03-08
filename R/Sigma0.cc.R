@@ -7,7 +7,6 @@ Sigma0.cc <- function(para, map, ref, model, sample.info, pr0, Delta, outcome){
   ncase <- sample.info$ncase
   nctrl <- sample.info$nctrl
   
-  ref$'(Intercept)' <- 1
   nmodel <- length(map$bet)
   nlam <- max(map$lam)
   

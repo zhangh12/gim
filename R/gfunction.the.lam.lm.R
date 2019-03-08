@@ -1,5 +1,5 @@
 
-
+# the first component in g.the.lam should be all zero
 gfunction.the.lam.lm <- function(g.the, lam){
   
   n <- nrow(g.the[[1]])

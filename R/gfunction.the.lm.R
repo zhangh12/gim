@@ -1,37 +1,27 @@
 
-# sigma is IN the
+# g.sigma = 0, as the first component
 gfunction.the.lm <- function(para, map, ref){
   
   nmodel <- length(map$bet)
   
-  sigma <- para[map$the[1]]
   the <- para[map$the[-1]]
   fx <- as.matrix(ref[, names(the), drop = FALSE])
-  
-  g.the <- list()
   
   nthe <- length(the)
   n <- nrow(ref)
   
   nlam <- max(map$lam)
   
-  gt <- matrix(0, nrow = n, ncol = nlam)
   offset <- max(map$the)
-  for(i in 1:nmodel){
-    id.tau <- map$alp[[i]][1]
-    gt[, id.tau - offset] <- 1
-  }
   
-  g.the[[1]] <- gt
-  rm(gt)
+  g.the <- list()
+  g.the[[1]] <- matrix(0, nrow = n, ncol = nlam)
   
   for(j in 1:nthe){
     gt <- matrix(0, nrow = n, ncol = nlam)
+    
     fx0 <- fx[, names(the)[j]]
     for(i in 1:nmodel){
-      id.tau <- map$alp[[i]][1]
-      tau <- para[id.tau]
-      
       id.a <- alp.index.lm(map, i)
       alp.exist <- !is.null(id.a)
       if(alp.exist){
@@ -48,13 +38,11 @@ gfunction.the.lm <- function(para, map, ref){
       
       delta <- as.vector(fx %*% the - rx %*% gam)
       
-      gt[, id.tau - offset] <- 2 * delta * fx0
       id <- c(id.a, id.b)
       gt[, id - offset] <- rx[, names(para)[id], drop = FALSE] * fx0
       
-      rm(id.tau, id.a, id.b, alp.exist)
     }
-    g.the[[j+1]] <- gt
+    g.the[[j + 1]] <- gt
     rm(gt)
   }
   

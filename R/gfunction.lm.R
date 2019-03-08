@@ -1,13 +1,11 @@
 
-# alp for each model: tau (alp[1]), coefficients for covariates x (if any, including intercept)
+# alp for each model: coefficients for covariates x (if any, including intercept), 
+# from v0.22.0, no tau in alp anymore, we do not estimate it
 # by adding a constant column in 'ref', we do not distinguish intercept and other coefficients
 # for each model, define 
 # g = 
-# (x * the - phi(x) * alp[-1])^2 + sigma - tau
-# (x * the - phi(x) * alp[-1]) * phi(x)
+# (x * the - phi(x) * alp) * phi(x)
 gfunction.lm <- function(para, map, ref){
-  
-  ref$'(Intercept)' <- 1
   
   nmodel <- length(map$bet)
   
@@ -20,9 +18,6 @@ gfunction.lm <- function(para, map, ref){
   g <- matrix(0, nrow = n, ncol = nlam)
   offset <- max(map$the)
   for(i in 1:nmodel){
-    id.tau <- map$alp[[i]][1]
-    tau <- para[id.tau]
-    
     id.a <- alp.index.lm(map, i)
     alp.exist <- !is.null(id.a)
     if(alp.exist){
@@ -39,11 +34,9 @@ gfunction.lm <- function(para, map, ref){
     
     delta <- as.vector(fx %*% the - rx %*% gam)
     
-    g[, id.tau - offset] <- delta^2 + sigma - tau
     id <- c(id.a, id.b)
     g[, id - offset] <- rx[, names(para)[id], drop = FALSE] * delta
     
-    rm(id.tau, id.a, id.b, alp.exist)
   }
   
   g

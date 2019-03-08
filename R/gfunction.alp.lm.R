@@ -1,5 +1,4 @@
 
-# tau is IN alp!!!
 gfunction.alp.lm <- function(para, map, ref){
   
   nmodel <- length(map$bet)
@@ -15,15 +14,16 @@ gfunction.alp.lm <- function(para, map, ref){
   
   k <- 0
   for(i in 1:nmodel){
-    id.tau <- map$alp[[i]][1]
-    tau <- para[id.tau]
-    
     id.a <- alp.index.lm(map, i)
     alp.exist <- !is.null(id.a)
     if(alp.exist){
       alp <- para[id.a]
     }else{
       alp <- NULL
+    }
+    
+    if(!alp.exist){
+      next
     }
     
     id.b <- map$bet[[i]]
@@ -34,22 +34,9 @@ gfunction.alp.lm <- function(para, map, ref){
     
     delta <- as.vector(fx %*% the - rx %*% gam)
     
-    ga <- matrix(0, nrow = n, ncol = nlam)
-    ga[, id.tau - offset] <- (-1)
-    
-    k <- k + 1
-    g.alp[[k]] <- ga
-    rm(ga)
-    
-    if(!alp.exist){
-      rm(id.tau, id.a, id.b, alp.exist)
-      next
-    }
-    
     for(j in id.a){
       rx0 <- rx[, names(para)[j]]
       ga <- matrix(0, nrow = n, ncol = nlam)
-      ga[, id.tau - offset] <- -2 * delta * rx0
       ga[, id.a - offset] <- -rx[, names(alp), drop = FALSE] * rx0
       ga[, id.b - offset] <- -rx[, names(bet), drop = FALSE] * rx0
       k <- k + 1
@@ -57,7 +44,6 @@ gfunction.alp.lm <- function(para, map, ref){
       rm(ga)
     }
     
-    rm(id.tau, id.a, id.b, alp.exist)
   }
   
   g.alp

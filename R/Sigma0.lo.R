@@ -1,4 +1,5 @@
 
+# there is a problem with this function, why I assume outcome is available in ref??
 # return optimal Sigma0, the covariance of auxiliary information
 Sigma0.lo <- function(para, map, ref, model, nsample, outcome){
   

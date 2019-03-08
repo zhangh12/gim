@@ -113,6 +113,8 @@ formula.parse <- function(formula, model, data, ref = NULL){
     covar <- setdiff(colnames(mat), model[[i]]$info$var)
     if(length(covar) == 0){
       covar <- NULL
+    }else{
+      covar <- as.character(covar)
     }
     
     # covar is nuisance variables specified in working model but no summary data available

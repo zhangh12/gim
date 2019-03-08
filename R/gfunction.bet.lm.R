@@ -16,9 +16,6 @@ gfunction.bet.lm <- function(para, map, ref){
   
   k <- 0
   for(i in 1:nmodel){
-    id.tau <- map$alp[[i]][1]
-    tau <- para[id.tau]
-    
     id.a <- alp.index.lm(map, i)
     alp.exist <- !is.null(id.a)
     if(alp.exist){
@@ -38,7 +35,6 @@ gfunction.bet.lm <- function(para, map, ref){
     for(j in id.b){
       rx0 <- rx[, names(para)[j]]
       gb <- matrix(0, nrow = n, ncol = nlam)
-      gb[, id.tau - offset] <- -2 * delta * rx0
       if(alp.exist){
         gb[, id.a - offset] <- -rx[, names(alp), drop = FALSE] * rx0
       }

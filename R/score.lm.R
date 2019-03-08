@@ -2,9 +2,8 @@
 
 score.lm <- function(para, map, data, ref, inv.V, bet0, outcome){
   
-  #return(grad(obj.lm, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, outcome = outcome))
-  
-  data$'(Intercept)' <- 1
+  #sc1 <- grad(obj.lm, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, outcome = outcome)
+  #return(sc1)
   
   nmodel <- length(map$bet)
   nlam <- max(map$lam)

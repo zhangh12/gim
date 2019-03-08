@@ -6,7 +6,6 @@ NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome){
   np <- length(para)
   para.null <- rep(NA, np)
   
-  obj <- obj.lm(para, map, data, ref, inv.V, bet0, outcome)
   i <- 0
   learning.rate <- 1
   
@@ -26,7 +25,7 @@ NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome){
       #s1 <- grad(obj.cc, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, sample.info = sample.info, outcome = outcome)
     }
     
-    cat('iter = ', i+1, '\t', max(abs(s0)), '           \r')
+    cat('iter = ', i+1, '\t', formatC(max(abs(s0)), digits = 2, format = 'e'), '           \r')
     
     if(all(abs(s0) < 1e-6)){
       break
@@ -51,7 +50,7 @@ NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome){
     
     d0 <- as.vector(inv.h0 %*% s0)
     if(max(abs(d0)) > 1){
-      d0 <- d0/max(abs(d0))
+      #d0 <- d0/max(abs(d0))
     }
     
     para <- para - learning.rate * d0
