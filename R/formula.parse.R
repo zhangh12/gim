@@ -13,10 +13,30 @@
 #####################################################################################
 formula.parse <- function(formula, model, data, ref = NULL){
   
+  form0 <- as.formula(formula)
+  
+  if(1){
+    # this does not work for log(y) ~ x. It will return 'y' rather than 'log(y)'
+    # use the following instead
+    ori.outcome <- all.vars(form0)[1]
+  }
+  
   # if ref is not specified, it assumes that internal data could be used as reference
   # which is used to construct constrain equations
   if(is.null(ref)){
     ref <- data
+  }
+  
+  if(ori.outcome %in% colnames(ref)){
+    # do not discard a line in reference if it only misses its outcome
+    if(any(is.na(ref[, ori.outcome]))){
+      id <- sample(1:nrow(data), nrow(ref), TRUE)
+      # it doesn't matter how to impute NA in outcome in ref
+      # because gim will not use its value
+      # I did this because I do not want model.matrix to delete incomplete lines in ref
+      # outcome is usually missing in ref, so I have to impute it.
+      ref[, ori.outcome] <- data[id, ori.outcome]
+    }
   }
   
   # I am going to parsing formula and extract/create necessary variables (transformed according to formula)
@@ -30,10 +50,15 @@ formula.parse <- function(formula, model, data, ref = NULL){
   # and rbind ref and data for parsing
   # values in added columns are copied from data, which do not make sense
   # those values could not be NA, otherwise model.frame or model.matrix will delete uncomplete rows
-  # I will remove those added columns before returning, so their values do not matter
+  # I will remove those added columns before returning (see the end of this function)
+  # so their imputed values do not matter
   var1 <- colnames(data)
   var2 <- colnames(ref)
   var3 <- intersect(var1, var2)
+  if(length(var3) == 0){
+    stop('data and ref do not share any variable')
+  }
+  
   ref <- ref[, var3, drop = FALSE]
   var4 <- setdiff(var1, var2)
   if(length(var4) > 0){
@@ -52,13 +77,6 @@ formula.parse <- function(formula, model, data, ref = NULL){
   data <- rbind(data, ref)
   data$'(Intercept)' <- 1
   
-  form0 <- as.formula(formula)
-  
-  if(1){
-    # this does not work for log(y) ~ x. It will return 'y' rather than 'log(y)'
-    # use the following instead
-    ori.outcome <- all.vars(form0)[1]
-  }
   
   # extract name of transformed outcome 
   # if log(y) ~ ..., then outcome should be 'log(y)', not 'y'

@@ -113,7 +113,7 @@ init.lm <- function(formula, data, model, nsample){
   map$all.bet <- sort(unique(all.bet))
   
   list(para = para, map = map, bet0 = bet0, 
-       sample.info = nsample, tau = tau)
+       sample.info = nsample)
   
 }
 

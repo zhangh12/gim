@@ -112,13 +112,15 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   for(j in 1:nthe){
     id.j <- map$the[j]
     fxj <- fx[, names(the)[j]]
+    tmp1 <- Delta * fxj
+    tmp2 <- tmp1 * pr
     for(l in j:nthe){
       id.l <- map$the[l]
       fxl <- fx[, names(the)[l]]
-      h[id.j, id.l] <- -lam[1] * sum(Delta * fxj * fxl * pr) -
+      h[id.j, id.l] <- -lam[1] * sum(tmp2 * fxl) -
         #t(g.the2[[foo(j,l)]][, -1, drop = FALSE] %*% xi) %*% pr +
         t(g.the2[[foo(j,l)]]) %*% pr +
-        sum((lam[1] * Delta * fxj + as.vector(g.the.xi[, j])) * 
+        sum((lam[1] * tmp1 + as.vector(g.the.xi[, j])) * 
               (lam[1] * Delta * fxl + as.vector(g.the.xi[, l])) * pr2)
       h[id.l, id.j] <- t(h[id.j, id.l])
     }
