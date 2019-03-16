@@ -54,7 +54,7 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   ####### ell.xi.the ??
   
   for(i in 1:nthe){
-    h[map$lam[-1], map$the[i]] <- -t(g.the[[i]][, -1, drop = FALSE]) %*% pr + 
+    h[map$lam[-1], map$the[i]] <- -t(g.the[[i]]) %*% pr + 
       t(g[, -1, drop = FALSE]) %*% ((lam[1] * Delta.the[, i] + g.the.xi[, i]) * pr2)
   }
   h[map$the, map$lam[-1]] <- t(h[map$lam[-1], map$the])
@@ -83,7 +83,7 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   k <- 0
   for(id in map$all.alp){
     k <- k + 1
-    h[map$lam[-1], id] <- -t(g.alp[[k]][, -1, drop = FALSE]) %*% pr + 
+    h[map$lam[-1], id] <- -t(g.alp[[k]]) %*% pr + 
       t(g[, -1, drop = FALSE]) %*% ((g.alp.xi[, k]) * pr2)
   }
   
@@ -94,7 +94,7 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   k <- 0
   for(id in map$all.bet){
     k <- k + 1
-    h[map$lam[-1], id] <- -t(g.bet[[k]][, -1, drop = FALSE]) %*% pr + 
+    h[map$lam[-1], id] <- -t(g.bet[[k]]) %*% pr + 
       t(g[, -1, drop = FALSE]) %*% (g.bet.xi[, k] * pr2)
   }
   
@@ -118,7 +118,6 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
       id.l <- map$the[l]
       fxl <- fx[, names(the)[l]]
       h[id.j, id.l] <- -lam[1] * sum(tmp2 * fxl) -
-        #t(g.the2[[foo(j,l)]][, -1, drop = FALSE] %*% xi) %*% pr +
         t(g.the2[[foo(j,l)]]) %*% pr +
         sum((lam[1] * tmp1 + as.vector(g.the.xi[, j])) * 
               (lam[1] * Delta * fxl + as.vector(g.the.xi[, l])) * pr2)
@@ -145,7 +144,6 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
         
         for(l in id.a){
           k <- k + 1
-          #h[id.j, l] <- -sum((g.the.alp[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
           h[id.j, l] <- -sum(g.the.alp[[foo(j, l)]] * pr) + 
             sum(g.alp.xi[, k] * tmp)
           h[l, id.j] <- t(h[id.j, l])
@@ -170,7 +168,6 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
       
       for(l in id.b){
         k <- k + 1
-        #h[id.j, l] <- -sum((g.the.bet[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
         h[id.j, l] <- -sum(g.the.bet[[foo(j, l)]] * pr) + 
           sum(g.bet.xi[, k] * tmp)
         h[l, id.j] <- t(h[id.j, l])
@@ -203,7 +200,6 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
             next
           }
           
-          #h[j, l] <- -sum((g.alp2[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
           h[j, l] <- -sum(g.alp2[[foo(j, l)]] * pr) + 
             sum(tmp * g.alp.xi[, kk[as.character(l)]] * pr2)
           h[l, j] <- t(h[j, l])
@@ -252,7 +248,6 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
         k <- k + 1
         tmp <- g.alp.xi[, k]
         for(l in id.b){
-          #h[j, l] <- -sum((g.alp.bet[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
           h[j, l] <- -sum(g.alp.bet[[foo(j, l)]] * pr) + 
             sum(tmp * g.bet.xi[, kk[as.character(l)]] * pr2)
           h[l, j] <- t(h[j, l])
@@ -296,7 +291,6 @@ hess.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
           next
         }
         
-        #h[j, l] <- -sum((g.bet2[[foo(j, l)]][, -1, drop = FALSE] %*% xi) * pr) + 
         h[j, l] <- -sum(g.bet2[[foo(j, l)]] * pr) + 
           sum(tmp * g.bet.xi[, kk[as.character(l)]] * pr2)
         h[l, j] <- t(h[j, l])

@@ -19,7 +19,7 @@ gfunction.alp.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi)
   }
   
   nlam <- max(map$lam)
-  offset <- max(map$the) - 1
+  offset <- max(map$the)
   
   foo <- function(j, l){
     paste0(j,'-',l)
@@ -39,10 +39,10 @@ gfunction.alp.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi)
       tmp <- const[[i]] * fxj
       for(l in id.b){
         fxl <- ref[, names(para)[l]]
-        gt <- matrix(0, nrow = n, ncol = nlam)
+        gt <- matrix(0, nrow = n, ncol = nlam - 1)
         gt[, id - offset] <- tmp * fxl
         #g.alp.bet[[foo(j,l)]] <- gt
-        g.alp.bet[[foo(j,l)]] <- gt[, -1, drop = FALSE] %*% xi
+        g.alp.bet[[foo(j,l)]] <- gt %*% xi
       }
     }
   }

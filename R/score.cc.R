@@ -10,6 +10,7 @@ score.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   nlam <- max(map$lam)
   
   lam <- para[map$lam]
+  xi <- lam[-1]
   
   the <- para[map$the]
   fx <- as.matrix(data[, names(the), drop = FALSE])
@@ -31,31 +32,22 @@ score.cc <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
   
   dlogL <- as.vector(t(fx) %*% y)
   g.the <- gfunction.the.cc(para, map, ref, Delta, delta, ncase, nctrl)
-  id <- map$the
-  for(i in 1:length(id)){
-    tmp <- as.vector(g.the[[i]] %*% lam)
-    sc[id[i]] <- dlogL[i] - sum(tmp * pr)
-    rm(tmp)
-  }
+  g.the.xi <- gfunction.the.xi.cc(g.the, xi)
+  tmp <- g.the.xi + lam[1] * Delta * ref[, names(the)]
+  sc[map$the] <- dlogL - t(tmp) %*% pr
+  rm(tmp)
   
-  g.alp <- gfunction.alp.cc(para, map, ref, Delta, delta, ncase, nctrl)
-  k <- max(map$the)
-  for(ga in g.alp){
-    tmp <- as.vector(ga %*% lam)
-    k <- k + 1
-    sc[k] <- -sum(tmp * pr)
-    rm(tmp)
+  if(!is.null(map$all.alp)){
+    g.alp <- gfunction.alp.cc(para, map, ref, Delta, delta, ncase, nctrl)
+    g.alp.xi <- gfunction.alp.xi.cc(g.alp, xi)
+    sc[map$all.alp] <- -t(g.alp.xi) %*% pr
   }
   
   bet <- para[map$all.bet]
   dqf <- as.vector(inv.V %*% (bet - bet0))
   g.bet <- gfunction.bet.cc(para, map, ref, Delta, delta, ncase, nctrl)
-  k <- min(map$all.bet) - 1
-  for(i in 1:length(g.bet)){
-    tmp <- as.vector(g.bet[[i]] %*% lam)
-    k <- k + 1
-    sc[k] <- -sum(tmp * pr) - dqf[i]
-  }
+  g.bet.xi <- gfunction.alp.xi.cc(g.bet, xi)
+  sc[map$all.bet] <- -t(g.bet.xi) %*% pr - dqf
   
   sc
   

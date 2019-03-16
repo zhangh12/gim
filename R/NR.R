@@ -32,22 +32,24 @@ NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome){
     }
     
     if(family == 'gaussian'){
-      t0 <- try(inv.h0 <- solve(hess.lm(para, map, data, ref, inv.V, bet0, outcome)), silent = TRUE)
+      h0 <- hess.lm(para, map, data, ref, inv.V, bet0, outcome)
     }
     
     if(family == 'binomial'){
-      t0 <- try(inv.h0 <- solve(hess.lo(para, map, data, ref, inv.V, bet0, outcome)), silent = TRUE)
+      h0 <- hess.lo(para, map, data, ref, inv.V, bet0, outcome)
     }
     
     if(family == 'case-control'){
-      t0 <- try(inv.h0 <- solve(hess.cc(para, map, data, ref, inv.V, bet0, sample.info, outcome)), silent = TRUE)
+      h0 <- hess.cc(para, map, data, ref, inv.V, bet0, sample.info, outcome)
     }
     
+    t0 <- try(inv.h0 <- solve(h0), silent = TRUE)
+
     if('try-error' %in% class(t0)){
       stop('hess fails')
       return(list(coefficients = para.null, score = para.null, conv =0))
     }
-    
+
     d0 <- as.vector(inv.h0 %*% s0)
     if(max(abs(d0)) > 1){
       #d0 <- d0/max(abs(d0))

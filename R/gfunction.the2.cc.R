@@ -22,7 +22,7 @@ gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi = N
   }
   
   nlam <- max(map$lam)
-  offset <- max(map$the) - 1
+  offset <- max(map$the)
   
   foo <- function(j, l){
     paste0(j,'-',l)
@@ -32,7 +32,7 @@ gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi = N
     fxj <- ref[, names(the)[j]]
     for(l in j:nthe){
       fxl <- ref[, names(the)[l]]
-      gt <- matrix(0, nrow = n, ncol = nlam)
+      gt <- matrix(0, nrow = n, ncol = nlam - 1)
       gt[, 1] <- fxj^2 * Delta
       for(i in 1:nmodel){
         id <- c(alp.index.cc(map, i), map$bet[[i]])
@@ -40,7 +40,7 @@ gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi = N
       }
       
       # g.the2[[foo(j,l)]] <- gt
-      g.the2[[foo(j,l)]] <- gt[, -1, drop = FALSE] %*% xi
+      g.the2[[foo(j,l)]] <- gt %*% xi
       rm(gt)
     }
   }

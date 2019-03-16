@@ -22,11 +22,12 @@ gfunction.the.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
   }
   
   nlam <- max(map$lam)
-  offset <- max(map$the) - 1
+  #offset <- max(map$the) - 1
+  offset <- max(map$the)
   for(j in 1:nthe){
-    gt <- matrix(0, nrow = n, ncol = nlam)
+    gt <- matrix(0, nrow = n, ncol = nlam - 1)
     fx0 <- ref[, names(the)[j]]
-    gt[, 1] <- fx0 * Delta
+    #gt[, 1] <- fx0 * Delta
     for(i in 1:nmodel){
       id <- c(alp.index.cc(map, i), map$bet[[i]])
       gt[, id - offset] <- const[[i]] * fx0

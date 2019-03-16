@@ -7,7 +7,8 @@ gfunction.the.xi.cc <- function(g.the, xi){
   k <- 0
   for(m in g.the){
     k <- k + 1
-    g.the.xi[, k] <- m[, -1, drop = FALSE] %*% xi
+    #g.the.xi[, k] <- m[, -1, drop = FALSE] %*% xi
+    g.the.xi[, k] <- m %*% xi
   }
   
   g.the.xi

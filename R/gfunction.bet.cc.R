@@ -8,7 +8,7 @@ gfunction.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
   
   n <- nrow(ref)
   nlam <- max(map$lam)
-  offset <- max(map$the) - 1
+  offset <- max(map$the)
   
   k <- 0
   for(i in 1:nmodel){
@@ -31,7 +31,7 @@ gfunction.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl){
     
     for(j in id.b){
       rx0 <- rx[, names(para)[j]]
-      gb <- matrix(0, nrow = n, ncol = nlam)
+      gb <- matrix(0, nrow = n, ncol = nlam - 1)
       gb[, id - offset] <- -const * rx0
       k <- k + 1
       g.bet[[k]] <- gb

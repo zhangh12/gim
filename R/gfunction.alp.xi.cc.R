@@ -13,7 +13,7 @@ gfunction.alp.xi.cc <- function(g.alp, xi){
   k <- 0
   for(m in g.alp){
     k <- k + 1
-    g.alp.xi[, k] <- m[, -1, drop = FALSE] %*% xi
+    g.alp.xi[, k] <- m %*% xi
   }
   
   g.alp.xi
