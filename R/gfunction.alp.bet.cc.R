@@ -1,6 +1,6 @@
 
 
-gfunction.alp.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi){
+gfunction.alp.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi, pr){
   
   nmodel <- length(map$bet)
   
@@ -42,7 +42,7 @@ gfunction.alp.bet.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi)
         gt <- matrix(0, nrow = n, ncol = nlam - 1)
         gt[, id - offset] <- tmp * fxl
         #g.alp.bet[[foo(j,l)]] <- gt
-        g.alp.bet[[foo(j,l)]] <- gt %*% xi
+        g.alp.bet[[foo(j,l)]] <- t(gt %*% xi) %*% pr
       }
     }
   }

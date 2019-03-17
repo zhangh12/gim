@@ -1,6 +1,6 @@
 
 
-gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi = NULL){
+gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi, pr){
   
   nmodel <- length(map$bet)
   
@@ -40,7 +40,7 @@ gfunction.the2.cc <- function(para, map, ref, Delta, delta, ncase, nctrl, xi = N
       }
       
       # g.the2[[foo(j,l)]] <- gt
-      g.the2[[foo(j,l)]] <- gt %*% xi
+      g.the2[[foo(j,l)]] <- t(gt %*% xi) %*% pr
       rm(gt)
     }
   }

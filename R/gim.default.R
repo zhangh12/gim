@@ -33,7 +33,7 @@ gim.default <- function(formula, family, data, model,
     niter <- niter - 1
   }
   
-  fit$vcov <- mcov(fit$coefficients, map, family, data, ref, model, sample.info, V, bet0, outcome)
+  fit$vcov <- mcov(para, map, family, data, ref, model, sample.info, V, bet0, outcome)
   
   fit <- reorganize(fit, map, family)
   
