@@ -92,21 +92,17 @@ init.lm <- function(formula, data, model, nsample){
   all.alp <- NULL
   all.bet <- NULL
   for(i in 1:nmodel){
-    map$alp[[i]] <- map$alp[[i]] + nlam + nthe
+    if(i %in% no.alp){
+      map$alp[[i]] <- NA
+    }else{
+      map$alp[[i]] <- map$alp[[i]] + nlam + nthe
+      all.alp <- c(all.alp, map$alp[[i]])
+    }
     map$bet[[i]] <- map$bet[[i]] + nlam + nthe + nalp
-    all.alp <- c(all.alp, map$alp[[i]])
     all.bet <- c(all.bet, map$bet[[i]])
   }
-  if(!is.null(no.alp)){
-    for(i in no.alp){
-      map$alp[[i]] <- NA
-    }
-  }
   
-  all.alp <- sort(unique(all.alp))
-  if(max(all.alp) == 0){
-    map$all.alp <- NULL
-  }else{
+  if(!is.null(all.alp)){
     map$all.alp <- sort(unique(all.alp))
   }
   

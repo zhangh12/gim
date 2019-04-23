@@ -15,7 +15,7 @@ Sigma0.cc <- function(para, map, ref, model, sample.info, pr0, Delta, outcome){
   offset <- max(map$the)
   for(i in 1:nmodel){
     
-    id.i <- c(alp.index.lo(map, i), map$bet[[i]])
+    id.i <- c(alp.index.cc(map, i), map$bet[[i]])
     gam <- para[id.i]
     
     rx.i <- as.matrix(ref[, names(gam), drop = FALSE])

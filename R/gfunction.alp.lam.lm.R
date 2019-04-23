@@ -2,6 +2,10 @@
 
 gfunction.alp.lam.lm <- function(g.alp, lam){
   
+  if(is.null(g.alp)){
+    return(NULL)
+  }
+  
   n <- nrow(g.alp[[1]])
   nalp <- length(g.alp)
   g.alp.lam <- matrix(NA, nrow = n, ncol = nalp)

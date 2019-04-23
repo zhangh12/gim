@@ -38,7 +38,7 @@ score.lm <- function(para, map, data, ref, inv.V, bet0, outcome){
   
   g.alp <- gfunction.alp.lm(para, map, ref)
   k <- max(map$the)
-  for(i in 1:length(g.alp)){
+  for(i in seq_along(g.alp)){
     tmp <- as.vector(g.alp[[i]] %*% lam)
     k <- k + 1
     sc[k] <- -sum(tmp * pr)

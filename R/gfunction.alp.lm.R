@@ -46,6 +46,10 @@ gfunction.alp.lm <- function(para, map, ref){
     
   }
   
+  if(length(g.alp) == 0){
+    g.alp <- NULL
+  }
+  
   g.alp
   
 }
