@@ -1,8 +1,8 @@
 Package: gim
 Type: Package
 Title: Generalized Integration Model
-Version: 0.26.0
-Date: 2019-04-23
+Version: 0.27.0
+Date: 2019-05-06
 Author: Han Zhang, Kai Yu
 Maintainer: Han Zhang <han.zhang2@nih.gov>
 Depends: R (>= 3.4.0)

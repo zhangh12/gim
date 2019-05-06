@@ -9,7 +9,7 @@ Fitting Generalized Integration Models
 }
 \usage{
 gim(formula, family, data, model, nsample = NULL, 
-    ncase = NULL, nctrl = NULL, ref = NULL, niter = 2)
+    ncase = NULL, nctrl = NULL, ref = NULL, ...)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -37,7 +37,7 @@ a matrix specifying the number of controls shared in datasets that are used to f
   \item{ref}{
 a data frame containing the covariates specified in \code{formula} and \code{model}. It is the reference sample for modeling summary statistics in \code{model}. This assumes that \code{ref} is sampled from the external population. By default it is \code{NULL} which means that the internal and external populations are the same, therefore \code{gim} will use \code{data} as the reference. Outcome could be absent or missing in \code{ref} because \code{gim} will anyway ignore it. See 'Details' for more details. 
 }
-  \item{niter}{
+  \item{...}{
 for test purpose, use its default value. 
 }
 }

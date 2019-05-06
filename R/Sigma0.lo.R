@@ -5,79 +5,37 @@ Sigma0.lo <- function(para, map, ref, model, nsample, outcome){
   
   #message('Estimating optimal covariance for auxiliary information...')
   
-  ref$'(Intercept)' <- 1
   nmodel <- length(map$bet)
   nlam <- max(map$lam)
   n <- nrow(ref)
   
-  lam <- para[map$lam]
-  
   the <- para[map$the]
   fx <- as.matrix(ref[, names(the), drop = FALSE])
-  y <- ref[, outcome]
+  exp.x.the <- exp(as.vector(fx %*% the))
+  y <- exp.x.the / (1 + exp.x.the)
   
   hess <- matrix(0, nrow = nlam, ncol = nlam)
-  score <- matrix(0, nrow = n, ncol = nlam)
+  info <- matrix(0, nrow = nlam, ncol = nlam)
   offset <- max(map$the)
   for(i in 1:nmodel){
-    
-    id.a <- alp.index.lo(map, i)
-    alp.exist <- !is.null(id.a) # TRUE if at least one linear coef unknown (e.g. intercept)
-    if(alp.exist){
-      alp <- para[id.a]
-    }else{
-      alp <- NULL
-    }
-    
-    id.b <- map$bet[[i]]
-    bet <- para[id.b]
-    gam <- c(alp, bet)
-    
-    rx <- as.matrix(ref[, names(gam), drop = FALSE])
-    if(alp.exist){
-      ra <- as.matrix(rx[, names(alp), drop = FALSE])
-    }else{
-      ra <- NULL
-    }
-    rb <- as.matrix(rx[, names(bet), drop = FALSE])
-    
-    tmp <- as.vector(exp(rx %*% gam))
-    yi <- tmp/(1+tmp)
-    
-    if(alp.exist){
-      hess[id.a - offset, id.a - offset] <- - (t(ra) %*% (ra * yi * (1-yi)))/n
-      hess[id.a - offset, id.b - offset] <- - (t(ra) %*% (rb * yi * (1-yi)))/n
-      hess[id.b - offset, id.a - offset] <- t(hess[id.a - offset, id.b - offset])
-    }
-    
-    hess[id.b - offset, id.b - offset] <- - (t(rb) %*% (rb * yi * (1-yi)))/n
-    
-    id <- c(id.a, id.b)
-    hess[id - offset, id - offset] <- nsample[i, i] * hess[id - offset, id - offset]
-    
-    ##############
-    
-    if(alp.exist){
-      score[, id.a - offset] <- ra * (y - yi)
-    }
-    score[, id.b - offset] <- rb * (y - yi)
-    
-    rm(id.a, id.b, alp.exist)
-    
-  }
-  
-  info <- cov(score)
-  for(i in 1:nmodel){
+    id1 <- c(alp.index.lo(map, i), map$bet[[i]])
+    gam1 <- para[id1]
+    rx1 <- as.matrix(ref[, names(gam1), drop = FALSE])
+    exp.x.gam1 <- exp(as.vector(rx1 %*% gam1))
+    y1 <- exp.x.gam1 / (1 + exp.x.gam1)
+    hess[id1 - offset, id1 - offset] <- -nsample[i, i] * (t(rx1) %*% (rx1 * y1 * (1 - y1))) / n
     for(j in i:nmodel){
-      # cannot use map$alp[[i]] as in Sigma0.lm
-      # because for logistic model, map$alp[[i]] could be NA if even intercept is also provided
-      # this could not happen in linear model because we assume that at least tau (error term) is not provided
-      # alp.index.lo will convert NA to be NULL
-      id1 <- c(alp.index.lo(map, i), map$bet[[i]])
       id2 <- c(alp.index.lo(map, j), map$bet[[j]])
-      info[id1 - offset, id2 - offset] <- nsample[i, j] * info[id1 - offset, id2 - offset]
+      gam2 <- para[id2]
+      rx2 <- as.matrix(ref[, names(gam2), drop = FALSE])
+      exp.x.gam2 <- exp(as.vector(rx2 %*% gam2))
+      y2 <- exp.x.gam2 / (1 + exp.x.gam2)
+      tmp <- t(rx1) %*% (rx2 * (y * (1 - y1 - y2) + y1 * y2)) / n
+      info[id1 - offset, id2 - offset] <- nsample[i, j] * tmp
       info[id2 - offset, id1 - offset] <- t(info[id1 - offset, id2 - offset])
+      rm(rx2)
     }
+    rm(rx1)
   }
   
   V <- solve(hess) %*% info %*% solve(hess)
