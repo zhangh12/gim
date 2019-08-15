@@ -20,6 +20,12 @@ gim.default <- function(formula, family, data, model,
     tol <- argu$tol
   }
   
+  if(is.null(argu$silent)){
+    silent <- TRUE
+  }else{
+    silent <- FALSE
+  }
+  
   data <- clean.data(data)
   
   fp <- formula.parse(formula, model, data, ref)
@@ -45,7 +51,7 @@ gim.default <- function(formula, family, data, model,
     if(eps < tol){
       break
     }
-    fit <- NR(para, map, family, data, ref, V, bet0, sample.info, outcome)
+    fit <- NR(para, map, family, data, ref, V, bet0, sample.info, outcome, silent)
     eps <- max(abs(para - fit$coefficients))
     para <- fit$coefficients
     niter <- niter - 1

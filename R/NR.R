@@ -1,6 +1,6 @@
 
 # Newton-Raphson algorithm
-NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome){
+NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome, silent){
   
   inv.V <- solve(V)
   np <- length(para)
@@ -25,7 +25,7 @@ NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome){
       #s1 <- grad(obj.cc, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, sample.info = sample.info, outcome = outcome)
     }
     
-    cat('iter = ', i+1, '\t', formatC(max(abs(s0)), digits = 2, format = 'e'), '           \r')
+    if(!silent) cat('iter = ', i+1, '\t', formatC(max(abs(s0)), digits = 2, format = 'e'), '           \r')
     
     if(all(abs(s0) < 1e-6)){
       break
