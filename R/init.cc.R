@@ -32,6 +32,10 @@ init.cc <- function(formula, data, model, ncase, nctrl, outcome){
   n0 <- sum(1 - data[, outcome])
   n <- effective.sample.size(n0, n1) # effective sample size
   
+  if('(Intercept)' %in% names(the)){
+    the['(Intercept)'] <- the['(Intercept)'] - log(n1 / n0)
+  }
+  
   pr0 <- (1-fit0$fitted.values)/n0
   # sum(pr0) == 1
   Delta <- exp(fit0$linear.predictors) * n0/n1
@@ -56,6 +60,10 @@ init.cc <- function(formula, data, model, ncase, nctrl, outcome){
     bet.var <- as.character(model[[i]][[3]]$var) # critical for meta-analysis of bet below
     N <- effective.sample.size(diag(ncase)[i], diag(nctrl)[i])
     alp0 <- coef(fit)[alp.var]
+    if('(Intercept)' %in% alp.var){
+      alp0['(Intercept)'] <- alp0['(Intercept)'] - log(ncase[i, i]/nctrl[i, i])
+    }
+    
     meta.bet <- (n * coef(fit)[bet.var] + N * model[[i]][[3]]$bet) / (n + N)
     #meta.bet <- model[[i]][[3]]$bet
     names(meta.bet) <- model[[i]][[3]]$var
