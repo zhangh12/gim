@@ -13,6 +13,8 @@ Sigma0.cc <- function(para, map, ref, model, sample.info, pr0, Delta, outcome){
   hess <- matrix(0, nrow = nlam - 1, ncol = nlam - 1)
   info <- hess
   offset <- max(map$the)
+  
+  E0 <- rep(list(NULL), nmodel)
   for(i in 1:nmodel){
     
     id.i <- c(alp.index.cc(map, i), map$bet[[i]])
@@ -44,7 +46,16 @@ Sigma0.cc <- function(para, map, ref, model, sample.info, pr0, Delta, outcome){
       n0.ij <- nctrl[i, j]
       tmp <- (n1.ij * Delta + n0.ij * rho.i * rho.j * delta.i * delta.j) / (1 + rho.i * delta.i) / (1 + rho.j * delta.j) * pr0
       
+      if(is.null(E0[[i]])){
+        E0[[i]] <- t(rx.i) %*% (Delta / (1 + rho.i * delta.i) * pr0)
+      }
+      
+      if(is.null(E0[[j]])){
+        E0[[j]] <- t(rx.j) %*% (Delta / (1 + rho.j * delta.j) * pr0)
+      }
+      
       info[id.i - offset, id.j - offset] <- (t(rx.i) %*% (rx.j * tmp))
+      info[id.i - offset, id.j - offset] <- info[id.i - offset, id.j - offset] - (n1.ij + n0.ij * rho.i * rho.j) * (E0[[i]] %*% t(E0[[j]]))
       
       if(i == j){
         next
