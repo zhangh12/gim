@@ -33,7 +33,7 @@ Han Zhang, Kai Yu
 Maintainer: Han Zhang <han.zhang2@nih.gov>
 }
 \references{
-Zhang, H., Deng, L., Schiffman, M., Qin, J., Yu, K. (2018) Generalized integration model for improved statistical inference by leveraging external summary data. Under review. 
+Zhang, H., Deng, L., Schiffman, M., Qin, J., Yu, K. (2018) Generalized integration model for improved statistical inference by leveraging external summary data. Biometrika. Accepted. 
 }
 
 \keyword{Generalized Integration Model}

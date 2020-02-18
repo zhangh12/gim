@@ -61,7 +61,7 @@ init.cc <- function(formula, data, model, ncase, nctrl, outcome){
     N <- effective.sample.size(diag(ncase)[i], diag(nctrl)[i])
     alp0 <- coef(fit)[alp.var]
     if('(Intercept)' %in% alp.var){
-      alp0['(Intercept)'] <- alp0['(Intercept)'] - log(ncase[i, i]/nctrl[i, i])
+      alp0['(Intercept)'] <- alp0['(Intercept)'] - log(n1 / n0)
     }
     
     meta.bet <- (n * coef(fit)[bet.var] + N * model[[i]][[3]]$bet) / (n + N)

@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-The `gim` package is used to integrate summary data reported to literature (external studies) with your own raw data (internal study). In this short tutorial, I will use examples to show various applications with `gim`. To use `gim`, you will have to find out what models are fitted for those external summary data. 
+The `gim` package is used to integrate summary data reported to literature (**external studies**) with your own raw data (**internal study**). In this short tutorial, I will use examples to show various applications with `gim`. To use `gim`, you will have to find out what models are fitted for those external summary data, while it is up to you to chose the model to be fitted on your own internal data. Keep in mind that the parameters in the model fitted on internal data are of interest in `gim` analysis.  
 
 ## Flexible Input
 
@@ -28,7 +28,7 @@ Your individual-level internal data should be passed through `data`. Note that e
 
 `gim` uses `model`, a list of list, to organize summary information from external studies. Please use `?gim` for more details of `model`. A rule of thumb is that if a set of coefficients are estimated from a fitted model, then one should pack them as an element into `model`. Two fitted external models could use the same or partially overlapping datasets, however, estimations from these two models should be stored as two separate elements in `model` as you do have fitted two models. Please refer to examples below. 
 
-External studies may or may not share data when models being fitted. If summary data from `k` external models are stored in `model`, then `nsample` should be a `k` by `k` matrix, with its `(i,j)` element representing how many shared samples are used when fitting the two models. If models are fitted on independent datasets, then the corresponding element in `nsample` should be zero. The diagonal elements are numbers of samples used in fitting each of the external models. When analyzing case-control data, we have to specify `ncase` and `nctrl` instead, and leave `nsample` to be `NULL`, the default value. 
+External studies may or may not share data when models being fitted. If summary data from `k` external models are stored in `model`, then `nsample` should be a `k` by `k` matrix, with its `(i,j)` element representing the numbers of shared samples being used when fitting the two models. If models are fitted on independent datasets, then the corresponding elements in `nsample` should be zeros. The diagonal elements are numbers of samples used in fitting each of the external models. When analyzing case-control data, we have to specify `ncase` and `nctrl` instead, and leave `nsample` to be `NULL`, the default value. 
 
 `gim` is able to handle the senario when internal and external studies are conducted on different populations. In that case, an extra reference set is required for making a valid inference on model parameters, otherwise, as shown in our paper, the estimation could be biased and the standard error of estimation may be underestimated. The reference set `ref` is a data frame consisting variables used in `formula` and `model[[i]]$formula`. Unused variables in `ref` would be discarded automatically. `gim` does not assume an outcome variable is present in `ref`, that is what a *reference* means. Such a reference set is used to estimate the distribution of covariates in the external population. 
 
@@ -42,7 +42,7 @@ for(m in model){
   glm(m$formula, family, data)
 }
 ```
-You may also add an artificial outcome into `ref` to replace `data` in codes above. If you still encounter any error message, then very likely some variables are missing in `data` or `ref`. 
+to find out a full list of those variables. You may also add an artificial outcome into `ref` to replace `data` in codes above. If you still encounter any error message when running those codes, then very likely some variables are missing in `data` or `ref`. 
 
 `?gim` provides a good example showing how to use `gim`. Here we give some more specified examples that could be of interest in practice. 
 
@@ -69,9 +69,9 @@ ext <- data.frame(cancer, sex, snp, age, stringsAsFactors = FALSE)
 |      | [30,50]| `r sum(cancer & age >= 30 & age <=50)` | `r sum(!cancer & age>=30 & age<=50)` |
 |      | > 50  | `r sum(cancer & age > 50)`  | `r sum(!cancer & age > 50)`  |
 | SNP  |  0     | `r sum(cancer & snp == 0)`   | `r sum(!cancer & snp == 0)`   |
-|      |  1/2   | `r sum(cancer & snp != 0)`   | `r sum(!cancer & snp != 0)`   |
+|      |  1 or 2   | `r sum(cancer & snp != 0)`   | `r sum(!cancer & snp != 0)`   |
 
-Note that the raw dataset `ext` could not be obtained from literature. Instead, one can only calculate univariate odds ratio of sex based on numbers in the table. For age, the odds ratios are subject to indicators `I(age < 30)` and `I(age > 50)`. For SNP, the best we can have is the odds ratio in a dominant model. Statistically it is equivalent to fitting univariate models on `ext` as follows
+Note that the raw dataset `ext` could not be obtained from literature. Instead, one can only calculate univariate odds ratio of sex based on numbers in the table. For age, the odds ratios are subject to indicators `I(age < 30)` and `I(age > 50)`. For SNP, the best we can have is the odds ratio in a dominant model. Statistically, these are equivalent to fitting univariate models on `ext` as follows
 
 ```{r}
 m1 <- glm(cancer ~ sex, data = ext, family = "binomial")
@@ -82,7 +82,7 @@ Sometimes even the contingency tables are also inaccessible, but only the odds r
 ```{r}
 summary(m2)$coef
 ```
-We can see that only `I(age > 50)` shows significant association with cancer, researchers may only report its log odds ratio `r coef(m2)[3]` in their articles. We thus illustrate `gim` by ignoring estimation of intercept in all the three models above. We also assume that only the log odds ratio of `I(age > 50)` is given to `gim`. We create `model` as
+We can see that only `I(age > 50)` shows significant association with cancer, researchers may only report its log odds ratio `r round(coef(m2)[3], 2)` in their articles. We thus illustrate `gim` by ignoring estimation of intercept in all the three models above. We also assume that only the log odds ratio of `I(age > 50)` is given to `gim`, while that of `I(age < 30)` is not. We create `model` as
 ```{r}
 model1 <- list(formula = 'cancer ~sex', 
                info = data.frame(var = names(coef(m1))[-1], 
@@ -96,7 +96,7 @@ model3 <- list(formula = 'cancer ~ I(snp == 0)',
 model <- list(model1, model2, model3)
 model2
 ```
-For each external model, `gim` needs to know the model used to fit external data (`model[[i]]$formula`), as well as the estimation of coefficients (`model[[i]]$info`). In this example, some coefficients (e.g. intercept and `I(age < 30)`) are estimated but not given to `gim`. This is a sweet spot of `gim` that can work with partial summary information quite well. Since all three external models are fitted on the same dataset, we specify `nsample` for the three fitted models as 
+For each external model, `gim` needs to know the model used to fit external data (`model[[i]]$formula`), as well as the estimation of coefficients (`model[[i]]$info`). In this example, some coefficients (e.g. intercept and `I(age < 30)`) are estimated but not given to `gim`. This is a sweet spot of `gim` that can work with partial summary information quite well. Note that it is Since all three external models are fitted on the same dataset, we specify `nsample` for the three fitted models as 
 ```{r}
 nsample <- matrix(N, 3, 3)
 ```
@@ -107,7 +107,7 @@ nctrl <- matrix(sum(!cancer), 3, 3)
 ```
 and leave `nsample` to be `NULL`.
 
-Now we collect a set of samples in our internal study. Note that I modify the model by using a differnt intercept while keeping all other coefficients remain the same as before, because I want a case-control data of a different case/control ratio. 
+Now we collect samples from an internal study. Note that we modify the model by using a differnt intercept 0.3 while keeping all other coefficients remain the same as before, because we want a case-control data of a different case/control ratio. 
 ```{r}
 n <- 300
 set.seed(1)
@@ -116,28 +116,40 @@ snp <- rbinom(n, 2, c(.4, .3, .3))
 age <- runif(n, 20, 60)
 pr <- plogis(.3 + .5 * I(sex == 'F') + .5 * I(age > 40) - .2 * snp)
 cancer <- rbinom(n, 1, pr)
-int <- data.frame(cancer, sex, snp, age, stringsAsFactors = FALSE)
+smoking <- sample(c(TRUE, FALSE), n, TRUE, c(.3, .7))
+int <- data.frame(cancer, sex, snp, age, smoking, stringsAsFactors = FALSE)
 ```
-Now we can integrate internal data `int` with external `model`. Let's assume that, based on some knowledges, we believe that a single cutoff for age at 40 should be used in the underlying model instead 30 and 50 used in external studies, and an additive model for SNP would be more of interest. So we assume the underlying true model would be `cancer ~ I(sex == "F") + I(age > 40) + snp`, and invoke `gim` as follows
+In this internal study, we also collect a binary `smoking`, although it does not affect the cancer risk in our setting. Now we can integrate internal data `int` with external `model`. Let's assume that, based on some knowledges, we believe that a single cutoff for age at 40 should be used in the underlying model instead 30 and 50 used in external studies, and an additive model for SNP would be more of interest. We also want to investigate potential effect of smoking status. So we assume the underlying true model would be `cancer ~ I(sex == "F") + I(age > 40) + snp + smoking`, and invoke `gim` as follows
 ```{r}
 library(gim)
-fit1 <- gim(cancer ~ I(sex == "F") + I(age > 40) + snp, 
+fit1 <- gim(cancer ~ I(sex == "F") + I(age > 40) + snp + smoking, 
             "case-control", int, model, 
             ncase = ncase, nctrl = nctrl)
 summary(fit1)
 ```
 One can compare the result with the one from `glm` fitted on `int`, which has higher standard errors on its estimations. 
 ```{r}
-fit0 <- glm(cancer ~ I(sex =="F") + I(age>40) +snp, 
+fit0 <- glm(cancer ~ I(sex =="F") + I(age>40) +snp + smoking, 
             "binomial", int)
 summary(fit0)$coef
 ```
+
+The following table compares models fitted on internal and external datasets: 
+
+|             |                  |                  |    External   |               |
+|-------------|------------------|------------------|---------------|---------------|
+|             |   **Internal**   |    **model 1**   | **model 2**   |  **model 3**  |
+| **Sex**     |  `I(sex == 'F')` | `I(sex == 'M')`  |               |               |
+| **Age**     |  `I(age > 40)`   |                  | `I(age < 30)` |               |
+|             |                  |                  | `I(age > 50)` |               |
+| **SNP**     |  `snp`           |                  |               | `I(snp == 0)` |
+| **Smoking** |  `smoking`       |                  |               |               |
 
 In this example, we used the feature in `gim` that supports flexible formula. One can, however, create variable instead using such a feature. For example, we can add columns to `int` as follows. Exactly the same result would be returned. 
 ```{r}
 int$sex_F <- ifelse(int$sex == "F", 1, 0)
 int$age_gt_40 <- ifelse(int$age > 40, 1, 0)
-fit2 <- gim(cancer ~ sex_F + age_gt_40 + snp, 
+fit2 <- gim(cancer ~ sex_F + age_gt_40 + snp + smoking, 
             "case-control", int, model, 
             ncase = ncase, nctrl = nctrl)
 summary(fit2)
@@ -155,7 +167,7 @@ model1 <- list(formula = 'cancer ~ dummy_sex',
                                  bet = coef(m1)[-1], stringsAsFactors = FALSE))
 model1
 model <- list(model1, model2, model3)
-fit3 <- gim(cancer ~ I(sex == "F") + I(age > 40) + snp, 
+fit3 <- gim(cancer ~ I(sex == "F") + I(age > 40) + snp + smoking, 
             "case-control", int, model, 
             ncase = ncase, nctrl = nctrl)
 summary(fit3)
