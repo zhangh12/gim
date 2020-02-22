@@ -1,5 +1,5 @@
 #exportPattern("^[[:alpha:]]+")
-importFrom(stats, coef, cov, glm, lm, printCoefmat)
+importFrom(stats, coef, cov, glm, lm, printCoefmat, predict.glm)
 importFrom(stats, as.formula, model.frame, model.matrix)
 importFrom(stats, complete.cases, sd, pchisq)
 importFrom(numDeriv, jacobian, grad)

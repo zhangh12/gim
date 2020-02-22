@@ -28,14 +28,15 @@ gim.default <- function(formula, family, data, model,
   
   data <- clean.data(data)
   
-  fp <- formula.parse(formula, model, data, ref)
+  fp <- formula.parse(formula, family, data, model, ref)
   model <- fp$model
   data <- fp$data
   ref <- fp$ref
   outcome <- fp$outcome
-  formula <- fp$formula
+  fit0 <- fp$fit0
+  type <- fp$type
   
-  ini <- init(formula, family, data, model, nsample, ncase, nctrl, outcome)
+  ini <- init(fit0, family, data, ref, model, nsample, ncase, nctrl, outcome, type)
   para <- ini$para
   map <- ini$map
   bet0 <- ini$bet0
@@ -47,19 +48,19 @@ gim.default <- function(formula, family, data, model,
   
   while(niter > 0){
     #message('Running Newton-Raphson algorithm on first stage...')
-    V <- optimal.Sigma0(para, map, family, ref, model, sample.info, pr0, Delta, outcome)
+    V <- optimal.Sigma0(para, map, family, ref, model, sample.info, pr0, Delta, outcome, type)
     if(eps < tol){
       break
     }
-    fit <- NR(para, map, family, data, ref, V, bet0, sample.info, outcome, silent)
+    fit <- NR(para, map, family, data, ref, V, bet0, sample.info, outcome, type, silent)
     eps <- max(abs(para - fit$coefficients))
     para <- fit$coefficients
     niter <- niter - 1
   }
   
-  fit$vcov <- mcov(para, map, family, data, ref, model, sample.info, V, bet0, outcome)
+  fit$vcov <- mcov(para, map, family, data, ref, model, sample.info, V, bet0, outcome, type)
   
-  fit <- reorganize(fit, map, family)
+  fit <- reorganize(fit, map, family, type)
   
   fit$call <- match.call()
   fit$V.bet <- V

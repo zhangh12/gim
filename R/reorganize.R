@@ -1,6 +1,6 @@
 
 
-reorganize <- function(fit, map, family){
+reorganize <- function(fit, map, family, type){
   
   if(family == 'gaussian'){
     fit <- reorganize.lm(fit, map)
@@ -11,7 +11,11 @@ reorganize <- function(fit, map, family){
   }
   
   if(family == 'case-control'){
-    fit <- reorganize.cc(fit, map)
+    if(type == 'cc-ref'){
+      fit <- reorganize.ccr(fit, map)
+    }else{
+      fit <- reorganize.cc(fit, map)
+    }
   }
   
   fit

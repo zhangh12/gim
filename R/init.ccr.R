@@ -1,14 +1,15 @@
 
 # lam: Lagrange multiplier, first one 
-# the: parameters in full model (internal data)
+# ome: intercept in full model (internal data)
+# the: parameters in full model (external data)
 # alp: nuisance parameter in working model (external data)
 # bet: parameters in working model (with summary data)
-# para := c(lam, the, alp, bet)
+# para := c(lam, ome, the, alp, bet)
 # bet0 := summary statistics to be used in quadratic form
 # pr0 := empirical distribution of controls, computed from internal data
 # Delta := exp(X * gam), X is augmented design matrix, and pr0 = 1/(1+n1/n0 * Delta)/n0
 
-init.cc <- function(fit0, data, model, ncase, nctrl, outcome){
+init.ccr <- function(fit0, data, ref, model, ncase, nctrl, outcome){
   
   #message('Initializing integration analysis...')
   
@@ -27,19 +28,22 @@ init.cc <- function(fit0, data, model, ncase, nctrl, outcome){
   
   #fit0 <- glm(formula, data = data, family = 'binomial')
   the <- coef(fit0)
+  pred <- predict.glm(fit0, ref, type = 'link') - the['(Intercept)']
+  fit <- predict.glm(fit0, data, type = 'link') - the['(Intercept)']
+  the0 <- -log(mean(exp(pred)))
+  the['(Intercept)'] <- the0
+  ome <- -log(mean(exp(fit))) - the0
+  names(ome) <- '(Intercept)'
   
   n1 <- sum(data[, outcome])
   n0 <- sum(1 - data[, outcome])
   n <- effective.sample.size(n0, n1) # effective sample size
   
-  if('(Intercept)' %in% names(the)){
-    the['(Intercept)'] <- the['(Intercept)'] - log(n1 / n0)
-  }
-  
-  pr0 <- (1-fit0$fitted.values)/n0
+  N <- nrow(ref)
+  pr0 <- rep(1/N, N)
   # sum(pr0) == 1
-  Delta <- exp(fit0$linear.predictors) * n0/n1
-  # sum(1/(1+n1/n0 * Delta)/n0) == 1
+  Delta <- exp(the0 + pred)
+  # mean(Delta) == 1
   
   nmodel <- length(model)
   
@@ -92,18 +96,19 @@ init.cc <- function(fit0, data, model, ncase, nctrl, outcome){
   lam <- c(n1/(n1 + n0), rep(0.01, nlam - 1))
   names(lam) <- paste0('lam', 1:nlam)
   
-  para <- c(lam, the, alp, bet)
+  para <- c(lam, ome, the, alp, bet)
   
   nthe <- length(the)
   nalp <- length(alp)
   
   map$lam <- 1:nlam
-  map$the <- (nlam + 1) : (nlam + nthe)
+  map$ome <- nlam + 1
+  map$the <- (nlam + 2) : (nlam + nthe + 1)
   all.alp <- NULL
   all.bet <- NULL
   for(i in 1:nmodel){
-    map$alp[[i]] <- map$alp[[i]] + nlam + nthe
-    map$bet[[i]] <- map$bet[[i]] + nlam + nthe + nalp
+    map$alp[[i]] <- map$alp[[i]] + nlam + nthe + 1
+    map$bet[[i]] <- map$bet[[i]] + nlam + nthe + nalp + 1
     all.alp <- c(all.alp, map$alp[[i]])
     all.bet <- c(all.bet, map$bet[[i]])
   }

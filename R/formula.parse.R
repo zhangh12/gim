@@ -11,9 +11,14 @@
 ## (2) log(y) ~ x # example in help doc. Feature: log in outcome
 ## (3) y ~ I(x==0) -1 # real example in paper (bet1 given)
 #####################################################################################
-formula.parse <- function(formula, model, data, ref = NULL){
+formula.parse <- function(formula, family, data, model, ref = NULL){
   
   form0 <- as.formula(formula)
+  if(family == 'gaussian'){
+    fit0 <- lm(form0, data)
+  }else{
+    fit0 <- glm(form0, family = 'binomial', data = data)
+  }
   
   if(1){
     # this does not work for log(y) ~ x. It will return 'y' rather than 'log(y)'
@@ -23,8 +28,13 @@ formula.parse <- function(formula, model, data, ref = NULL){
   
   # if ref is not specified, it assumes that internal data could be used as reference
   # which is used to construct constrain equations
+  type <- 'others'
   if(is.null(ref)){
     ref <- data
+  }else{
+    if(family == 'case-control'){
+      type <- 'cc-ref' # case-control data with specific external reference
+    }
   }
   
   if(ori.outcome %in% colnames(ref)){
@@ -44,11 +54,12 @@ formula.parse <- function(formula, model, data, ref = NULL){
   # after those variables are ready, data and ref will be split again
   # int.id lets me know which rows are internal data, and which rows are ref
   int.id <- 1:nrow(data)
+  data0 <- data
   
   # ref may miss some columns in data (e.g. outcome)
   # I will add those missed columns to ref
   # and rbind ref and data for parsing
-  # values in added columns are copied from data, which do not make sense
+  # values in added columns are copied from data, which do not have to make sense
   # those values could not be NA, otherwise model.frame or model.matrix will delete uncomplete rows
   # I will remove those added columns before returning (see the end of this function)
   # so their imputed values do not matter
@@ -93,9 +104,6 @@ formula.parse <- function(formula, model, data, ref = NULL){
   # add intercept term (all 1, named '(Intercept)')
   mat0 <- model.matrix(form0, data = data)
   
-  # need the following otherwise a formula like y~. will result in an error
-  #form0 <- paste0(outcome, ' ~ ', paste0(setdiff(colnames(mat0), '(Intercept)'), collapse = ' + '))
-  
   miss.var <- NULL
   nform <- length(model)
   # parse each of working models
@@ -135,8 +143,14 @@ formula.parse <- function(formula, model, data, ref = NULL){
       covar <- as.character(covar)
     }
     
+    if(family == 'gaussian'){
+      fit <- lm(f, data = data0)
+    }else{
+      fit <- glm(f, family = 'binomial', data = data0)
+    }
     # covar is nuisance variables specified in working model but no summary data available
-    model[[i]] <- list(f, covar, model[[i]]$info)
+    model[[i]] <- list(f, covar, model[[i]]$info, fit)
+    rm(fit)
   }
   
   if(length(miss.var) > 0){
@@ -160,6 +174,7 @@ formula.parse <- function(formula, model, data, ref = NULL){
     ref[, var4] <- NA
   }
   
-  list(model = model, data = data, ref = ref, outcome = outcome, formula = form0)
+  list(model = model, data = data, ref = ref, fit0 = fit0, 
+       outcome = outcome, formula = form0, type = type)
   
 }

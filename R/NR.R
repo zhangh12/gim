@@ -1,6 +1,6 @@
 
 # Newton-Raphson algorithm
-NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome, silent){
+NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome, type, silent){
   
   inv.V <- solve(V)
   np <- length(para)
@@ -21,8 +21,14 @@ NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome, sile
     }
     
     if(family == 'case-control'){
-      s0 <- score.cc(para, map, data, ref, inv.V, bet0, sample.info, outcome)
-      #s1 <- grad(obj.cc, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, sample.info = sample.info, outcome = outcome)
+      if(type == 'cc-ref'){
+        s0 <- score.ccr(para, map, data, ref, inv.V, bet0, sample.info, outcome)
+        #s1 <- grad(obj.ccr, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, sample.info = sample.info, outcome = outcome)
+      }else{
+        s0 <- score.cc(para, map, data, ref, inv.V, bet0, sample.info, outcome)
+        #s1 <- grad(obj.cc, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, sample.info = sample.info, outcome = outcome)
+      }
+
     }
     
     if(!silent) cat('iter = ', i+1, '\t', formatC(max(abs(s0)), digits = 2, format = 'e'), '           \r')
@@ -40,7 +46,11 @@ NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome, sile
     }
     
     if(family == 'case-control'){
-      h0 <- hess.cc(para, map, data, ref, inv.V, bet0, sample.info, outcome)
+      if(type == 'cc-ref'){
+        h0 <- hess.ccr(para, map, data, ref, inv.V, bet0, sample.info, outcome)
+      }else{
+        h0 <- hess.cc(para, map, data, ref, inv.V, bet0, sample.info, outcome)
+      }
     }
     
     t0 <- try(inv.h0 <- solve(h0), silent = TRUE)

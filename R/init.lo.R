@@ -7,7 +7,7 @@
 # bet0 := summary statistics to be used in quadratic form
 
 
-init.lo <- function(formula, data, model, nsample){
+init.lo <- function(fit0, data, model, nsample){
   
   #message('Initializing integration analysis...')
   
@@ -18,7 +18,7 @@ init.lo <- function(formula, data, model, nsample){
   
   nsample <- as.matrix(nsample)
   
-  fit0 <- glm(formula, data = data, family = 'binomial')
+  #fit0 <- glm(formula, data = data, family = 'binomial')
   the <- coef(fit0)
   
   n <- nrow(data)
@@ -36,7 +36,8 @@ init.lo <- function(formula, data, model, nsample){
   for(i in 1:nmodel){
     
     form <- model[[i]][[1]]
-    fit <- glm(form, data = data, family = 'binomial')
+    #fit <- glm(form, data = data, family = 'binomial')
+    fit <- model[[i]][[4]]
     alp.var <- as.character(model[[i]][[2]])
     bet.var <- as.character(model[[i]][[3]]$var) # critical for meta-analysis of bet below
     N <- diag(nsample)[i]
