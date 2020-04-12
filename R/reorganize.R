@@ -18,6 +18,10 @@ reorganize <- function(fit, map, family, type){
     }
   }
   
+  if(family == 'cml'){
+    fit <- reorganize.cml(fit, map)
+  }
+  
   fit
   
 }

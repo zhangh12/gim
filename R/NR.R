@@ -31,6 +31,11 @@ NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome, type
 
     }
     
+    if(family == 'cml'){
+      s0 <- score.cml(para, map, data, ref, inv.V, bet0, sample.info, outcome)
+      #s1 <- grad(obj.cml, para, map = map, data = data, ref = ref, inv.V = inv.V, bet0 = bet0, sample.info = sample.info, outcome = outcome)
+    }
+    
     if(!silent) cat('iter = ', i+1, '\t', formatC(max(abs(s0)), digits = 2, format = 'e'), '           \r')
     
     if(all(abs(s0) < 1e-6)){
@@ -51,6 +56,10 @@ NR <- function(para, map, family, data, ref, V, bet0, sample.info, outcome, type
       }else{
         h0 <- hess.cc(para, map, data, ref, inv.V, bet0, sample.info, outcome)
       }
+    }
+    
+    if(family == 'cml'){
+      h0 <- hess.cml(para, map, data, ref, inv.V, bet0, sample.info, outcome)
     }
     
     t0 <- try(inv.h0 <- solve(h0), silent = TRUE)

@@ -17,6 +17,10 @@ mcov <- function(para, map, family, data, ref, model, sample.info, V, bet0, outc
     }
   }
   
+  if(family == 'cml'){
+    mat <- cov.cml(para, map, data, ref, sample.info, V, bet0, outcome)
+  }
+  
   mat
   
 }

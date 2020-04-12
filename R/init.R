@@ -1,7 +1,7 @@
 
 init <- function(fit0, family, data, ref, model, nsample, ncase, nctrl, outcome, type){
   
-  if(!(family %in% c('gaussian', 'binomial', 'case-control'))){
+  if(!(family %in% c('gaussian', 'binomial', 'case-control', 'cml'))){
     stop('family should be \'gaussian\', \'binomial\', or \'case-control\'.')
   }
   
@@ -19,6 +19,10 @@ init <- function(fit0, family, data, ref, model, nsample, ncase, nctrl, outcome,
     }else{
       ini <- init.cc(fit0, data, model, ncase, nctrl, outcome)
     }
+  }
+  
+  if(family == 'cml'){
+    ini <- init.cml(fit0, data, model, ncase, nctrl, outcome)
   }
   
   ini
