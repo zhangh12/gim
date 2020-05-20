@@ -28,6 +28,12 @@ gim.default <- function(formula, family, data, model,
   
   data <- clean.data(data)
   
+  cm <- collapse.model(family, model, nsample, ncase, nctrl)
+  model <- cm$model
+  nsample <- cm$nsample
+  ncase <- cm$ncase
+  nctrl <- cm$nctrl
+  
   fp <- formula.parse(formula, family, data, model, ref)
   model <- fp$model
   data <- fp$data
@@ -53,6 +59,7 @@ gim.default <- function(formula, family, data, model,
       break
     }
     fit <- NR(para, map, family, data, ref, V, bet0, sample.info, outcome, type, silent)
+    #fit <- loop(para, map, family, data, ref, V, bet0, sample.info, outcome, type, silent)
     eps <- max(abs(para - fit$coefficients))
     para <- fit$coefficients
     niter <- niter - 1

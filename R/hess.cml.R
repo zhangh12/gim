@@ -315,8 +315,6 @@ hess.cml <- function(para, map, data, ref, inv.V, bet0, sample.info, outcome){
     }
   }
   
-  h[map$all.bet, map$all.bet] <- h[map$all.bet, map$all.bet]
-  
   ####################
   
   colnames(h) <- names(para)

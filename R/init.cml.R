@@ -60,9 +60,14 @@ init.cml <- function(fit0, data, model, ncase, nctrl, outcome){
     alp.var <- as.character(model[[i]][[2]])
     bet.var <- as.character(model[[i]][[3]]$var) # critical for meta-analysis of bet below
     N <- effective.sample.size(diag(ncase)[i], diag(nctrl)[i])
-    alp0 <- coef(fit)[alp.var]
-    if('(Intercept)' %in% alp.var){
-      alp0['(Intercept)'] <- alp0['(Intercept)'] - log(n1 / n0)
+    
+    if(length(alp.var) > 0){
+      alp0 <- coef(fit)[alp.var]
+      if('(Intercept)' %in% alp.var){
+        alp0['(Intercept)'] <- alp0['(Intercept)'] - log(n1 / n0)
+      }
+    }else{
+      alp0 <- NULL
     }
     
     alp <- c(alp, alp0)
@@ -71,7 +76,7 @@ init.cml <- function(fit0, data, model, ncase, nctrl, outcome){
     bet <- c(bet, tmp)
     bet0 <- c(bet0, tmp)
     
-    if(length(alp0) > 0){
+    if(!is.null(alp0)){
       map$alp[[i + 1]] <- max(map$alp[[i]]) + 1:length(alp0)
     }else{
       map$alp[[i + 1]] <- map$alp[[i]]
@@ -101,21 +106,17 @@ init.cml <- function(fit0, data, model, ncase, nctrl, outcome){
   all.alp <- NULL
   all.bet <- NULL
   for(i in 1:nmodel){
-    map$alp[[i]] <- map$alp[[i]] + nlam + nthe
+    if(i %in% no.alp){
+      map$alp[[i]] <- NA
+    }else{
+      map$alp[[i]] <- map$alp[[i]] + nlam + nthe
+      all.alp <- c(all.alp, map$alp[[i]])
+    }
     map$bet[[i]] <- map$bet[[i]] + nlam + nthe + nalp
-    all.alp <- c(all.alp, map$alp[[i]])
     all.bet <- c(all.bet, map$bet[[i]])
   }
-  if(!is.null(no.alp)){
-    for(i in no.alp){
-      map$alp[[i]] <- NA
-    }
-  }
   
-  all.alp <- sort(unique(all.alp))
-  if(max(all.alp) == 0){
-    map$all.alp <- NULL
-  }else{
+  if(!is.null(all.alp)){
     map$all.alp <- sort(unique(all.alp))
   }
   

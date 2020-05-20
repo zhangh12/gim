@@ -51,7 +51,7 @@ init.lm <- function(fit0, data, model, nsample){
     # from v0.22.0, we do not estimate tau so alp could be NULL
     #tau <- c(tau, summary(fit)$sigma^2)
     tau <- c(tau, mean(fit$residuals^2))
-    if(!is.null(alp.var)){
+    if(length(alp.var) > 0){
       alp0 <- coef(fit)[alp.var]
     }else{
       alp0 <- NULL
@@ -67,7 +67,7 @@ init.lm <- function(fit0, data, model, nsample){
     if(!is.null(alp0)){
       map$alp[[i + 1]] <- max(map$alp[[i]]) + 1:length(alp0)
     }else{
-      map$alp[[i + 1]] <- max(map$alp[[i]])
+      map$alp[[i + 1]] <- map$alp[[i]]
       no.alp <- c(no.alp, i)
     }
     
