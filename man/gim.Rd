@@ -78,7 +78,7 @@ An object of class "\code{gim}" is a list containing the following components:
 %% ...
 }
 \references{
-Zhang, H., Deng, L., Schiffman, M., Qin, J., Yu, K. (2018) Generalized integration model for improved statistical inference by leveraging external summary data. Biometrika. Accepted. 
+Zhang, H., Deng, L., Schiffman, M., Qin, J., Yu, K. (2020) Generalized integration model for improved statistical inference by leveraging external summary data. Biometrika. asaa014, https://doi.org/10.1093/biomet/asaa014
 }
 \author{
 Han Zhang
