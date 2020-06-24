@@ -1,10 +1,10 @@
 ---
-title: "Generalized Integration Model for Improved Statistical Inference by Leveraging External Summary Data"
+title: "Generalized Integration Model"
 author: "Han Zhang"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Generalized Integration Model}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
