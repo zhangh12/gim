@@ -1,6 +1,6 @@
 
 
-gfunction.bet.lam.lm <- function(g.bet, lam){
+gfunction.bet.lam.lo <- function(g.bet, lam){
   
   n <- nrow(g.bet[[1]])
   nbet <- length(g.bet)
