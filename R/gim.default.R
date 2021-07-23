@@ -55,6 +55,12 @@ gim.default <- function(formula, family, data, model,
   while(niter > 0){
     #message('Running Newton-Raphson algorithm on first stage...')
     V <- optimal.Sigma0(para, map, family, ref, model, sample.info, pr0, Delta, outcome, type, bet0)
+    
+    if(family == 'case-control' && type == 'others'){
+      pr0 <- NULL
+      Delta <- NULL
+    }
+    
     if(eps < tol){
       break
     }

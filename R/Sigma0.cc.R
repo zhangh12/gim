@@ -4,6 +4,10 @@ Sigma0.cc <- function(para, map, ref, model, sample.info, pr0, Delta, outcome){
   
   #message('Estimating optimal covariance for auxiliary information...')
   
+  ud <- update.pr0.Delta(para, map, ref, Delta, delta, ncase, nctrl, pr0)
+  pr0 <- ud$pr0
+  Delta <- ud$Delta
+  
   ncase <- sample.info$ncase
   nctrl <- sample.info$nctrl
   
