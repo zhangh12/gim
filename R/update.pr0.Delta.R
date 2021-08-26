@@ -1,6 +1,6 @@
 
 
-update.pr0.Delta <- function(para, map, ref, Delta, delta, ncase, nctrl, pr0){
+update.pr0.Delta <- function(para, map, ref, Delta, ncase, nctrl, pr0){
   
   if(is.null(pr0) + is.null(Delta) == 1){
     stop('Message for Kai (LoL): pr0 and Delta should be NULL (or not NULL) at the same time')
